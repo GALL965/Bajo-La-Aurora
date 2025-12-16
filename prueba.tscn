@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://xidig7tu23gj"]
+
+[ext_resource type="Texture2D" uid="uid://3ieiqkhrnpsa" path="res://fond.png" id="1_71jk5"]
+[ext_resource type="PackedScene" uid="uid://f84k6k4veyhm" path="res://scenes/player/Leray.tscn" id="2_mt5rx"]
+[ext_resource type="Script" uid="uid://xkxcnngy8a7o" path="res://scripts/Camera/BrawlerCamera.gd" id="3_rcdd3"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="Fond" type="Sprite2D" parent="."]
+position = Vector2(548, 302)
+scale = Vector2(0.5436346, 0.5436346)
+texture = ExtResource("1_71jk5")
+
+[node name="Leray" parent="." instance=ExtResource("2_mt5rx")]
+position = Vector2(455, 400)
+
+[node name="CameraRig" type="Node2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)
+script = ExtResource("3_rcdd3")
+target_path = NodePath("../Leray")
+deadzone_down = 200.0
+
+[node name="Camera2D" type="Camera2D" parent="CameraRig"]
+scale = Vector2(0.99999994, 0.99999994)

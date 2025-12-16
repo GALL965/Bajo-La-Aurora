@@ -1,0 +1,78 @@
+[gd_scene load_steps=8 format=3 uid="uid://baut7kqf0ofcx"]
+
+[ext_resource type="Script" uid="uid://ckgbqkcg06ipf" path="res://scripts/enemy/EnemigoBase.gd" id="1_rdiwc"]
+[ext_resource type="Script" uid="uid://bj8wtpy0e4ipg" path="res://scripts/enemy/EnemySenses.gd" id="2_d2rna"]
+[ext_resource type="Script" uid="uid://d24up0p1esr7e" path="res://scripts/enemy/EnemyMovement.gd" id="3_1b6pj"]
+[ext_resource type="Script" uid="uid://ddv4vhdcewt7q" path="res://scripts/enemy/EnemyCombatMelee.gd" id="4_gmalk"]
+[ext_resource type="Script" uid="uid://ftq6r868axci" path="res://scripts/enemy/EnemyHealth.gd" id="5_pocmn"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_apqgt"]
+radius = 19.0
+height = 54.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_yfqpq"]
+radius = 14.0
+height = 62.0
+
+[node name="EnemigoBase" type="Node2D" groups=["enemigos", "enemigos_androides"]]
+script = ExtResource("1_rdiwc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CapsuleShape2D_apqgt")
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Sprite2D" type="AnimatedSprite2D" parent="Visual"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="Facing" type="Node2D" parent="."]
+
+[node name="at" type="Area2D" parent="Facing"]
+
+[node name="hit" type="CollisionShape2D" parent="Facing/at"]
+position = Vector2(20, 14)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_yfqpq")
+disabled = true
+
+[node name="Deteccion" type="Area2D" parent="Facing"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Facing/Deteccion"]
+position = Vector2(20, 14)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_yfqpq")
+disabled = true
+
+[node name="Timers" type="Node" parent="."]
+
+[node name="PrepTimer" type="Timer" parent="Timers"]
+wait_time = 0.1
+one_shot = true
+
+[node name="GolpeFinTimer" type="Timer" parent="Timers"]
+one_shot = true
+
+[node name="AtaqueTimer" type="Timer" parent="Timers"]
+one_shot = true
+
+[node name="KnockBackTimer" type="Timer" parent="Timers"]
+one_shot = true
+
+[node name="MuerteTimer" type="Timer" parent="Timers"]
+wait_time = 0.5
+one_shot = true
+
+[node name="Senses" type="Node" parent="."]
+script = ExtResource("2_d2rna")
+
+[node name="Movement" type="Node" parent="."]
+script = ExtResource("3_1b6pj")
+
+[node name="Combat" type="Node" parent="."]
+script = ExtResource("4_gmalk")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("5_pocmn")
+
+[node name="dano" type="AudioStreamPlayer2D" parent="."]

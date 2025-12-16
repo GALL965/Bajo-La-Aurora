@@ -1,0 +1,26 @@
+[gd_resource type="Theme" load_steps=5 format=3 uid="uid://dp5ckefnqmemk"]
+
+[ext_resource type="FontFile" uid="uid://boklvwqwwmtc1" path="res://assets/fonts/Megrim-Regular.ttf" id="1_ndjfm"]
+
+[sub_resource type="FontVariation" id="FontVariation_yvafq"]
+base_font = ExtResource("1_ndjfm")
+baseline_offset = 0.575
+
+[sub_resource type="FontVariation" id="FontVariation_ftahe"]
+base_font = SubResource("FontVariation_yvafq")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ndjfm"]
+bg_color = Color(0, 0, 0, 0.3882353)
+border_width_left = 1
+border_width_top = 1
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+
+[resource]
+default_font = SubResource("FontVariation_ftahe")
+default_font_size = 40
+Button/colors/icon_normal_color = Color(1, 1, 1, 1)
+Button/constants/h_separation = 4
+Button/fonts/font = SubResource("FontVariation_ftahe")
+Button/styles/normal = SubResource("StyleBoxFlat_ndjfm")
