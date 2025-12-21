@@ -1,48 +1,167 @@
-[gd_scene load_steps=8 format=3 uid="uid://baut7kqf0ofcx"]
+[gd_scene load_steps=20 format=3 uid="uid://baut7kqf0ofcx"]
 
 [ext_resource type="Script" uid="uid://ckgbqkcg06ipf" path="res://scripts/enemy/EnemigoBase.gd" id="1_rdiwc"]
+[ext_resource type="Texture2D" uid="uid://bk4twkgqtn5hb" path="res://assets/sprites/enemies/eidle.png" id="2_1b6pj"]
+[ext_resource type="Texture2D" uid="uid://ciy7o0hy358du" path="res://assets/sprites/enemies/golp.png" id="2_cnax4"]
 [ext_resource type="Script" uid="uid://bj8wtpy0e4ipg" path="res://scripts/enemy/EnemySenses.gd" id="2_d2rna"]
+[ext_resource type="Texture2D" uid="uid://ccpw2bpj0x4fe" path="res://assets/sprites/characters/sombra.png" id="2_w1ef1"]
 [ext_resource type="Script" uid="uid://d24up0p1esr7e" path="res://scripts/enemy/EnemyMovement.gd" id="3_1b6pj"]
+[ext_resource type="Texture2D" uid="uid://8jf6tiaxw7j8" path="res://assets/sprites/enemies/dam1.png" id="3_w1ef1"]
 [ext_resource type="Script" uid="uid://ddv4vhdcewt7q" path="res://scripts/enemy/EnemyCombatMelee.gd" id="4_gmalk"]
+[ext_resource type="Texture2D" uid="uid://cog2mumkf0hwn" path="res://assets/sprites/enemies/death.png" id="4_hnrh2"]
 [ext_resource type="Script" uid="uid://ftq6r868axci" path="res://scripts/enemy/EnemyHealth.gd" id="5_pocmn"]
+[ext_resource type="Texture2D" uid="uid://cjl0a7ns3h6sa" path="res://assets/sprites/enemies/prep.png" id="6_uhel1"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_apqgt"]
-radius = 19.0
-height = 54.0
+radius = 13.8701935
+height = 27.740387
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gmalk"]
+atlas = ExtResource("2_1b6pj")
+region = Rect2(0, 0, 720, 720)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pocmn"]
+atlas = ExtResource("2_1b6pj")
+region = Rect2(720, 0, 720, 720)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cnax4"]
+atlas = ExtResource("2_1b6pj")
+region = Rect2(1440, 0, 720, 720)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w1ef1"]
+atlas = ExtResource("2_1b6pj")
+region = Rect2(2160, 0, 720, 720)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hnrh2"]
+atlas = ExtResource("2_1b6pj")
+region = Rect2(2880, 0, 720, 720)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_rdiwc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_cnax4")
+}],
+"loop": false,
+"name": &"attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("3_w1ef1")
+}],
+"loop": false,
+"name": &"damage",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_hnrh2")
+}],
+"loop": false,
+"name": &"death",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gmalk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pocmn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cnax4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w1ef1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hnrh2")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_uhel1")
+}],
+"loop": false,
+"name": &"prep",
+"speed": 5.0
+}]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_yfqpq"]
 radius = 14.0
 height = 62.0
 
-[node name="EnemigoBase" type="Node2D" groups=["enemigos", "enemigos_androides"]]
+[node name="EnemigoBase" type="CharacterBody2D" groups=["enemigos", "enemigos_androides"]]
+light_mask = 5
+visibility_layer = 5
+scale = Vector2(0.8971965, 0.8971965)
+collision_layer = 8
+collision_mask = 3
 script = ExtResource("1_rdiwc")
+vertical_mode = null
+altura_volando = null
+bob_amp = null
+bob_speed = null
+ignorar_colision_con_unidades_en_aire = null
+capas_unidades = null
+velocidad_max = null
+attack_damage = null
+ataque_delay = null
+fuerza_salto = null
+gravedad = null
+kb_decay = null
+
+[node name="Sombra" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.39215687)
+position = Vector2(0, 100)
+scale = Vector2(0.29156652, 0.29156652)
+texture = ExtResource("2_w1ef1")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1, 30)
+scale = Vector2(3.0665276, 4.1816287)
 shape = SubResource("CapsuleShape2D_apqgt")
 
 [node name="Visual" type="Node2D" parent="."]
+position = Vector2(0, 16.718746)
+scale = Vector2(1.3045433, 1.3045433)
 
-[node name="Sprite2D" type="AnimatedSprite2D" parent="Visual"]
+[node name="Sprite" type="AnimatedSprite2D" parent="Visual"]
+position = Vector2(-4, -23)
+scale = Vector2(0.26231822, 0.26231822)
+sprite_frames = SubResource("SpriteFrames_rdiwc")
+animation = &"idle"
+frame_progress = 0.58685756
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(5.594047, 5.594047)
 
 [node name="Facing" type="Node2D" parent="."]
+position = Vector2(2.2291603, -4.7683716e-07)
+scale = Vector2(3.1030824, 2.936064)
 
 [node name="at" type="Area2D" parent="Facing"]
+collision_layer = 0
+collision_mask = 2
 
-[node name="hit" type="CollisionShape2D" parent="Facing/at"]
+[node name="Hit" type="CollisionShape2D" parent="Facing/at"]
 position = Vector2(20, 14)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_yfqpq")
 disabled = true
 
 [node name="Deteccion" type="Area2D" parent="Facing"]
+collision_layer = 0
+collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Facing/Deteccion"]
 position = Vector2(20, 14)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_yfqpq")
-disabled = true
 
 [node name="Timers" type="Node" parent="."]
 
@@ -76,3 +195,4 @@ script = ExtResource("4_gmalk")
 script = ExtResource("5_pocmn")
 
 [node name="dano" type="AudioStreamPlayer2D" parent="."]
+scale = Vector2(0.99999994, 0.99999994)

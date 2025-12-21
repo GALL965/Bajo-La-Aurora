@@ -100,7 +100,7 @@ func _on_prep_timeout() -> void:
 	if owner_enemy:
 		owner_enemy.set("estado", "atacando")
 
-	emit_signal("solicitar_animacion", "golpe")
+	emit_signal("solicitar_animacion", "attack")
 	_activar_hitbox()
 	resolver_golpe()
 

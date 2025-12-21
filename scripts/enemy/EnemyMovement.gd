@@ -36,13 +36,14 @@ var _tiempo_ruta: float = 0.0
 @export var cambiar_ruta_cada: float = 0.9
 var _objetivo_actual: Vector2 = Vector2.ZERO
 
+
 func setup(enemy: Node2D, player: Node2D) -> void:
 	owner_enemy = enemy
 	jugador = player
 
 	if owner_enemy and owner_enemy.has_method("get_velocidad_max"):
 		velocidad_max = float(owner_enemy.call("get_velocidad_max"))
-	elif owner_enemy and "velocidad_max" in owner_enemy:
+	elif owner_enemy and _has_prop(owner_enemy, &"velocidad_max"):
 		velocidad_max = float(owner_enemy.get("velocidad_max"))
 
 	_objetivo_actual = owner_enemy.global_position
@@ -53,69 +54,139 @@ func setup(enemy: Node2D, player: Node2D) -> void:
 	_ruta_jitter = _rng.randf_range(-18.0, 18.0)
 	_fase_refresh = _rng.randf_range(0.0, cambiar_ruta_cada * 0.6)
 
+
 func activar_lock_melee(y_obj: float) -> void:
 	_lock_activo = true
 	_lock_y = y_obj
 
+
 func desactivar_lock_melee() -> void:
 	_lock_activo = false
 
-func _aliados_cercanos() -> Array:
-	var todos = get_tree().get_nodes_in_group("enemigos_androides")
-	var out: Array = []
-	for n in todos:
-		if n != owner_enemy and n is CharacterBody2D:
-			if n.global_position.distance_to(owner_enemy.global_position) <= radio_separacion * 1.5:
-				out.append(n)
-	return out
 
-func _fuerza_separacion() -> Vector2:
-	var aliados = _aliados_cercanos()
-	var repulsion := Vector2.ZERO
+func tick(delta: float) -> void:
+	if jugador == null or owner_enemy == null:
+		return
 
-	for a in aliados:
-		var to_me = owner_enemy.global_position - a.global_position
-		var d = to_me.length()
-		if d > 0.0 and d < radio_separacion:
-			repulsion += to_me.normalized() * (1.0 - (d / radio_separacion))
+	# 🔒 Si el jugador está dasheando, NO intentar seguirlo
+	if jugador.has_method("esta_dasheando"):
+		if jugador.call("esta_dasheando"):
+			vel = Vector2.ZERO
+			return
 
-	if owner_enemy and ("estado" in owner_enemy):
-		var est = str(owner_enemy.get("estado"))
+	var est := _get_estado()
+
+	# FIX CLAVE: mientras ataca, NO debe “seguirte” ni reposicionarse
+	if est == "atacando":
+		vel = Vector2.ZERO
+		return
+
+	_tiempo_ruta += delta
+	if _tiempo_ruta >= (cambiar_ruta_cada + _fase_refresh):
+		_objetivo_actual = _objetivo_tactico()
+		_tiempo_ruta = 0.0
+
 		if est == "preparando" or est == "atacando":
-			repulsion.y = 0.0
+			_fase_refresh = -cambiar_ruta_cada * 0.6
+		else:
+			_fase_refresh = _rng.randf_range(0.0, cambiar_ruta_cada * 0.6)
 
-	return repulsion * fuerza_separacion
+	var to_target := _objetivo_actual - owner_enemy.global_position
+	var dist := to_target.length()
+	var dir := Vector2.ZERO
+	if dist > 0.0:
+		dir = to_target / dist
+
+	var deseada := dir * velocidad_max
+
+	# Mientras prepara, no “arrastres” en X (opcional pero recomendado)
+	if est == "preparando":
+		deseada.x = 0.0
+
+	# Lock Y cerca/combate (solo ajusta Y)
+	var dist_to_player := owner_enemy.global_position.distance_to(jugador.global_position)
+	var lockY := (est == "preparando" or est == "atacando" or dist_to_player <= y_lock_alcance)
+
+	if lockY:
+		var dy := jugador.global_position.y - owner_enemy.global_position.y
+		if abs(dy) <= y_lock_tolerancia:
+			vel.y = 0.0
+		else:
+			var dir_y := -1.0 if dy < 0.0 else 1.0
+
+			vel.y = dir_y * min(abs(dy) / max(delta, 0.001), y_snap_vel)
+
+	if _lock_activo or est == "preparando" or est == "atacando":
+		var ref_y := jugador.global_position.y
+		if _lock_activo:
+			ref_y = _lock_y
+
+		var dy2 := ref_y - owner_enemy.global_position.y
+		if abs(dy2) <= lock_y_tolerancia:
+			vel.y = 0.0
+		else:
+			var dir_y2 := -1.0 if dy2 < 0.0 else 1.0
+
+			vel.y = dir_y2 * min(lock_y_vel, abs(dy2) / max(delta, 0.001))
+
+		# Este micro-nudge también se siente como “arrastre”.
+		# Si aún lo notas, comenta este bloque.
+		if est == "preparando":
+			var dx := jugador.global_position.x - owner_enemy.global_position.x
+			if dx != 0.0:
+				var dir_x := -1.0 if dx < 0.0 else 1.0
+
+				vel.x += dir_x * lock_micro_nudge_x * delta
+
+	if dist < radio_arrival and dist > 0.0:
+		var esc = clamp(dist / radio_arrival, 0.35, 1.0)
+		deseada = dir * (velocidad_max * esc)
+
+	var mezcla := 0.95
+	vel = vel.lerp(deseada, clamp(mezcla, 0.0, 1.0))
+
+	var f_sep := _fuerza_separacion()
+	if f_sep != Vector2.ZERO:
+		var empuje := f_sep
+		var max_boost := 120.0
+		if empuje.length() > max_boost:
+			empuje = empuje.normalized() * max_boost
+		vel += empuje * delta
+
+	if dir == Vector2.ZERO:
+		var s := vel.length()
+		if s > 0.0:
+			s = max(s - frenado * delta, 0.0)
+			if s == 0.0:
+				vel = Vector2.ZERO
+			else:
+				vel = vel.normalized() * s
+
+	if vel.length() > velocidad_max:
+		vel = vel.normalized() * velocidad_max
+
 
 func _objetivo_tactico() -> Vector2:
-	var player_pos = jugador.global_position
-	var target = player_pos
+	var player_pos := jugador.global_position
+	var target := player_pos
 
-	var dist = owner_enemy.global_position.distance_to(player_pos)
-	var est := ""
-	if owner_enemy and ("estado" in owner_enemy):
-		est = str(owner_enemy.get("estado"))
-
-	var en_combate = (est == "preparando" or est == "atacando")
-	var cerca_para_lock = dist <= lock_y_alcance or _lock_activo
+	var dist := owner_enemy.global_position.distance_to(player_pos)
+	var est := _get_estado()
+	var en_combate := (est == "preparando" or est == "atacando")
+	var cerca_para_lock := dist <= lock_y_alcance or _lock_activo
 
 	if en_combate or cerca_para_lock:
-		var lado = 1
+		var lado := 1
 		if owner_enemy.global_position.x < player_pos.x:
 			lado = -1
 		target.x = player_pos.x + float(lado) * distancia_lateral
-		if _lock_activo:
-			target.y = _lock_y
-		else:
-			target.y = player_pos.y
+		target.y = _lock_y if _lock_activo else player_pos.y
+
 		return target
 
-	var jugador_en_aire = false
-	if jugador and jugador.has_method("esta_en_el_aire"):
-		jugador_en_aire = bool(jugador.call("esta_en_el_aire"))
-
-	var enemigo_en_aire = false
-	if owner_enemy and ("en_el_aire" in owner_enemy):
-		enemigo_en_aire = bool(owner_enemy.get("en_el_aire"))
+	# Aire (si tu player/enemigo exponen algo de “en el aire”)
+	var jugador_en_aire := _is_airborne(jugador)
+	var enemigo_en_aire := _is_airborne(owner_enemy)
 
 	if jugador_en_aire or enemigo_en_aire:
 		var lado_air = sign(owner_enemy.global_position.x - player_pos.x)
@@ -129,94 +200,60 @@ func _objetivo_tactico() -> Vector2:
 	target.x += _rng.randf_range(-14.0, 14.0)
 	return target
 
-func tick(delta: float) -> void:
-	if jugador == null or owner_enemy == null:
-		return
 
-	_tiempo_ruta += delta
-	if _tiempo_ruta >= (cambiar_ruta_cada + _fase_refresh):
-		_objetivo_actual = _objetivo_tactico()
-		_tiempo_ruta = 0.0
-		var est := ""
-		if "estado" in owner_enemy:
-			est = str(owner_enemy.get("estado"))
-		if est == "preparando" or est == "atacando":
-			_fase_refresh = -cambiar_ruta_cada * 0.6
-		else:
-			_fase_refresh = _rng.randf_range(0.0, cambiar_ruta_cada * 0.6)
+func _aliados_cercanos() -> Array:
+	var todos = get_tree().get_nodes_in_group("enemigos_androides")
+	var out: Array = []
+	for n in todos:
+		if n != owner_enemy and n is CharacterBody2D:
+			if n.global_position.distance_to(owner_enemy.global_position) <= radio_separacion * 1.5:
+				out.append(n)
+	return out
 
-	var to_target = _objetivo_actual - owner_enemy.global_position
-	var dist = to_target.length()
-	var dir := Vector2.ZERO
-	if dist > 0.0:
-		dir = to_target / dist
 
-	var deseada = dir * velocidad_max
+func _fuerza_separacion() -> Vector2:
+	var aliados = _aliados_cercanos()
+	var repulsion := Vector2.ZERO
 
-	# Lock Y cerca/combate
-	var dist_to_player = owner_enemy.global_position.distance_to(jugador.global_position)
-	var est2 := ""
-	if "estado" in owner_enemy:
-		est2 = str(owner_enemy.get("estado"))
+	for a in aliados:
+		var to_me = owner_enemy.global_position - a.global_position
+		var d = to_me.length()
+		if d > 0.0 and d < radio_separacion:
+			repulsion += to_me.normalized() * (1.0 - (d / radio_separacion))
 
-	var lockY = (est2 == "preparando" or est2 == "atacando" or dist_to_player <= y_lock_alcance)
-	if lockY:
-		var dy = jugador.position.y - owner_enemy.position.y
-		if abs(dy) <= y_lock_tolerancia:
-			vel.y = 0.0
-		else:
-			var dir_y = 1.0
-			if dy < 0.0:
-				dir_y = -1.0
-			vel.y = dir_y * min(abs(dy) / max(delta, 0.001), y_snap_vel)
+	var est := _get_estado()
+	if est == "preparando" or est == "atacando":
+		repulsion.y = 0.0
 
-	if _lock_activo or est2 == "preparando" or est2 == "atacando":
-		var ref_y = jugador.position.y
-		if _lock_activo:
-			ref_y = _lock_y
-		var dy2 = ref_y - owner_enemy.position.y
-		if abs(dy2) <= lock_y_tolerancia:
-			vel.y = 0.0
-		else:
-			var dir_y2 = 1.0
-			if dy2 < 0.0:
-				dir_y2 = -1.0
-			vel.y = dir_y2 * min(lock_y_vel, abs(dy2) / max(delta, 0.001))
+	return repulsion * fuerza_separacion
 
-		if est2 == "preparando":
-			var dx = jugador.position.x - owner_enemy.position.x
-			if dx != 0.0:
-				var dir_x = 1.0
-				if dx < 0.0:
-					dir_x = -1.0
-				vel.x += dir_x * lock_micro_nudge_x * delta
-
-	if dist < radio_arrival and dist > 0.0:
-		var esc = clamp(dist / radio_arrival, 0.35, 1.0)
-		deseada = dir * (velocidad_max * esc)
-
-	var mezcla = 0.95
-	vel = vel.lerp(deseada, clamp(mezcla, 0.0, 1.0))
-
-	var f_sep = _fuerza_separacion()
-	if f_sep != Vector2.ZERO:
-		var empuje = f_sep
-		var max_boost = 120.0
-		if empuje.length() > max_boost:
-			empuje = empuje.normalized() * max_boost
-		vel += empuje * delta
-
-	if dir == Vector2.ZERO:
-		var s = vel.length()
-		if s > 0.0:
-			s = max(s - frenado * delta, 0.0)
-			if s == 0.0:
-				vel = Vector2.ZERO
-			else:
-				vel = vel.normalized() * s
-
-	if vel.length() > velocidad_max:
-		vel = vel.normalized() * velocidad_max
 
 func get_velocidad_actual() -> Vector2:
 	return vel
+
+
+func _get_estado() -> String:
+	if owner_enemy and _has_prop(owner_enemy, &"estado"):
+		return str(owner_enemy.get("estado"))
+	return ""
+
+
+func _is_airborne(n: Node) -> bool:
+	if n == null:
+		return false
+	if n.has_method("is_en_el_aire"):
+		return bool(n.call("is_en_el_aire"))
+	if n.has_method("esta_en_el_aire"):
+		return bool(n.call("esta_en_el_aire"))
+	if n.has_method("is_airborne"):
+		return bool(n.call("is_airborne"))
+	if _has_prop(n, &"en_el_aire"):
+		return bool(n.get("en_el_aire"))
+	return false
+
+
+func _has_prop(obj: Object, prop: StringName) -> bool:
+	for d in obj.get_property_list():
+		if d.get("name") == prop:
+			return true
+	return false

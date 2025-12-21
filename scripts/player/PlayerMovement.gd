@@ -28,7 +28,11 @@ func update_movement(delta: float) -> Vector2:
 	var target := input_dir * speed
 
 	if input_dir != Vector2.ZERO:
-		velocity = velocity.move_toward(target, acceleration * delta)
+		# Si cambia la dirección en X, girar instantáneo
+		if sign(input_dir.x) != sign(velocity.x) and velocity.x != 0.0:
+			velocity.x = target.x
+		else:
+			velocity = velocity.move_toward(target, acceleration * delta)
 	else:
 		velocity = velocity.move_toward(Vector2.ZERO, friction * delta)
 

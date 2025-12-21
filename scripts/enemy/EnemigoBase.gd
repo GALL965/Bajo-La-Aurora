@@ -1,6 +1,34 @@
 extends CharacterBody2D
 class_name EnemigoBase
 
+
+enum VerticalMode { SUELO, VOLANDO }
+
+@export var vertical_mode: VerticalMode = VerticalMode.SUELO
+@export var altura_volando: float = 140.0
+@export var bob_amp: float = 0.0
+@export var bob_speed: float = 2.2
+
+@export var ignorar_colision_con_unidades_en_aire: bool = true
+@export_flags_2d_physics var capas_unidades: int = 0
+
+var _bob_t: float = 0.0
+var _mask_base: int = 0
+
+
+
+var _hit_base_x: float = 0.0
+var _det_base_x: float = 0.0
+
+@onready var hit_shape: CollisionShape2D = $Facing/at/Hit
+@onready var det_shape: CollisionShape2D = $Facing/Deteccion/CollisionShape2D
+
+@onready var sprite: AnimatedSprite2D = get_node_or_null("Visual/Sprite") as AnimatedSprite2D
+
+
+@onready var at_node: Node2D = $Facing/at
+@onready var det_node: Node2D = $Facing/Deteccion
+
 @export var velocidad_max: float = 420.0
 @export var attack_damage: float = 10.0
 @export var ataque_delay: float = 0.5
@@ -24,7 +52,6 @@ var kb_time_left: float = 0.0
 @export var kb_decay: float = 2200.0
 
 @onready var visual: Node2D = $Visual
-@onready var sprite: AnimatedSprite2D = $Visual/Sprite
 @onready var facing: Node2D = $Facing
 
 @onready var senses: EnemySenses = $Senses
@@ -38,6 +65,8 @@ var kb_time_left: float = 0.0
 var _base_visual_pos: Vector2
 
 func _ready() -> void:
+	_mask_base = int(collision_mask)
+
 	add_to_group("enemigos")
 	add_to_group("enemigos_androides")
 
@@ -60,6 +89,20 @@ func _ready() -> void:
 
 	if sprite:
 		sprite.animation_finished.connect(_on_sprite_anim_finished)
+
+
+	# IMPORTANTE:
+	# NO reescalar Facing aquí. Si lo escalaste en editor, queremos respetarlo.
+	# Quita completamente:
+	# facing.scale = Vector2(1, 1)
+	
+	if hit_shape:
+		_hit_base_x = abs(hit_shape.position.x)
+
+	if det_shape:
+		_det_base_x = abs(det_shape.position.x)
+
+
 
 func _physics_process(delta: float) -> void:
 	if health and not health.esta_vivo():
@@ -93,6 +136,15 @@ func _physics_process(delta: float) -> void:
 				kb_vel_x = 0.0
 
 	velocity = v
+	
+	if jugador and jugador.has_method("esta_en_el_aire") and bool(jugador.call("esta_en_el_aire")):
+		# Quita la capa del jugador de tu máscara (AJUSTA ESTE BIT)
+		const LAYER_PLAYER := 1 << 1  # si tu Player está en layer 2
+		collision_mask = _mask_base & ~LAYER_PLAYER
+	else:
+		collision_mask = _mask_base
+
+	
 	move_and_slide()
 
 	_update_anim(v)
@@ -101,7 +153,21 @@ func _physics_process(delta: float) -> void:
 	z_index = int(global_position.y)
 
 func _process_vertical(delta: float) -> void:
+	# Modo volando: altura fija (con bob opcional) y sin gravedad
+	if vertical_mode == VerticalMode.VOLANDO:
+		en_el_aire = true
+		velocidad_salto = 0.0
+
+		_bob_t += delta * bob_speed
+		altura = altura_volando + sin(_bob_t) * bob_amp
+
+		_set_unit_collision_enabled(false)
+		visual.position = _base_visual_pos + Vector2(0.0, -altura)
+		return
+
+	# Modo suelo/salto normal
 	if not en_el_aire:
+		_set_unit_collision_enabled(true)
 		visual.position = _base_visual_pos
 		return
 
@@ -112,8 +178,12 @@ func _process_vertical(delta: float) -> void:
 		altura = 0.0
 		velocidad_salto = 0.0
 		en_el_aire = false
+		_set_unit_collision_enabled(true)
+	else:
+		_set_unit_collision_enabled(false)
 
 	visual.position = _base_visual_pos + Vector2(0.0, -altura)
+
 
 func _update_anim(v: Vector2) -> void:
 	if sprite == null:
@@ -126,24 +196,21 @@ func _update_anim(v: Vector2) -> void:
 		return
 
 	if v.length() > 20.0:
-		if sprite.animation != "av" and sprite.sprite_frames.has_animation("av"):
-			sprite.play("av")
+		if sprite.animation != "idle" and sprite.sprite_frames.has_animation("av"):
+			sprite.play("idle")
 	else:
 		if sprite.animation != "idle" and sprite.sprite_frames.has_animation("idle"):
 			sprite.play("idle")
+			
+			
+	if hit_shape:
+		_hit_base_x = abs(hit_shape.position.x)
 
-func _update_facing() -> void:
-	if jugador == null or sprite == null:
-		return
+	if det_shape:
+		_det_base_x = abs(det_shape.position.x)
 
-	var mirando_izq = (jugador.global_position.x < global_position.x)
-	sprite.flip_h = mirando_izq
 
-	if facing:
-		var s = 1.0
-		if mirando_izq:
-			s = -1.0
-		facing.scale.x = s
+
 
 # --- API para el jugador ---
 func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float = 260.0) -> void:
@@ -218,3 +285,57 @@ func _on_murio() -> void:
 
 func _on_muerte_timeout() -> void:
 	queue_free()
+	
+func _update_facing() -> void:
+	if jugador == null:
+		return
+
+	var derecha := true
+	if jugador.global_position.x < global_position.x:
+		derecha = false
+
+	# Voltear solo el sprite (si existe)
+	if sprite:
+		sprite.flip_h = not derecha
+
+	var sign := 1.0
+	if not derecha:
+		sign = -1.0
+
+	# Reflejar hitboxes moviendo sus CollisionShape2D (NO scale)
+	if hit_shape:
+		var p := hit_shape.position
+		p.x = _hit_base_x * sign
+		hit_shape.position = p
+
+	if det_shape:
+		var p2 := det_shape.position
+		p2.x = _det_base_x * sign
+		det_shape.position = p2
+
+
+func start_jump() -> void:
+	if vertical_mode == VerticalMode.VOLANDO:
+		return
+	if en_el_aire:
+		return
+	velocidad_salto = fuerza_salto
+	en_el_aire = true
+	_set_unit_collision_enabled(false)
+
+
+
+func _set_unit_collision_enabled(enabled: bool) -> void:
+	if not ignorar_colision_con_unidades_en_aire:
+		return
+	if capas_unidades == 0:
+		return
+
+	if enabled:
+		collision_mask = _mask_base
+	else:
+		collision_mask = _mask_base & ~capas_unidades
+
+
+func get_altura() -> float:
+	return altura
