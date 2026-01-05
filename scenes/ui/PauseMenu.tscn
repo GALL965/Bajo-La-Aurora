@@ -1,0 +1,101 @@
+[gd_scene load_steps=7 format=3 uid="uid://diduya384mpvg"]
+
+[ext_resource type="Script" uid="uid://00v13bgfpsjy" path="res://scripts/ui/PauseMenu.gd" id="1_7ida2"]
+[ext_resource type="Shader" uid="uid://cno0dpk6wwuds" path="res://assets/shaders/glass_blur.gdshader" id="1_vb6pq"]
+[ext_resource type="Theme" uid="uid://dp5ckefnqmemk" path="res://assets/themes/ui_theme.tres" id="3_5twic"]
+[ext_resource type="FontFile" uid="uid://boklvwqwwmtc1" path="res://assets/fonts/Megrim-Regular.ttf" id="3_n5dsq"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_7ida2"]
+shader = ExtResource("1_vb6pq")
+shader_parameter/blur_amount = 1.0
+shader_parameter/blur_pixel = 1.5
+shader_parameter/darken = 0.32
+shader_parameter/overlay_alpha = 6.1
+
+[sub_resource type="FontVariation" id="FontVariation_5twic"]
+base_font = ExtResource("3_n5dsq")
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+script = ExtResource("1_7ida2")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dimmer" type="ColorRect" parent="Root"]
+material = SubResource("ShaderMaterial_7ida2")
+layout_mode = 0
+offset_left = -730.0
+offset_top = -508.0
+offset_right = 904.0
+offset_bottom = 628.0
+
+[node name="Panel" type="PanelContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -659.0
+offset_top = -399.0
+offset_right = 2166.0
+offset_bottom = 4280.7876
+grow_vertical = 2
+scale = Vector2(0.16688794, 0.16688794)
+theme = ExtResource("3_5twic")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Root/Panel"]
+layout_mode = 2
+alignment = 1
+
+[node name="ResumeBtn" type="Button" parent="Root/Panel/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("3_5twic")
+theme_override_fonts/font = ExtResource("3_n5dsq")
+theme_override_font_sizes/font_size = 300
+text = "Continuar"
+alignment = 0
+
+[node name="OptionsBtn" type="Button" parent="Root/Panel/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("3_5twic")
+theme_override_fonts/font = ExtResource("3_n5dsq")
+theme_override_font_sizes/font_size = 300
+text = "Opciones"
+alignment = 0
+
+[node name="MainMenuBtn" type="Button" parent="Root/Panel/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("3_5twic")
+theme_override_fonts/font = ExtResource("3_n5dsq")
+theme_override_font_sizes/font_size = 300
+text = "Menu"
+alignment = 0
+
+[node name="QuitBtn" type="Button" parent="Root/Panel/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("3_5twic")
+theme_override_fonts/font = ExtResource("3_n5dsq")
+theme_override_font_sizes/font_size = 300
+text = "Salir
+"
+alignment = 0
+
+[node name="Pausa" type="Label" parent="."]
+offset_left = 1006.0
+offset_top = 318.0
+offset_right = 1249.0
+offset_bottom = 416.0
+theme_override_fonts/font = SubResource("FontVariation_5twic")
+theme_override_font_sizes/font_size = 90
+text = "Pausa"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://baut7kqf0ofcx"]
+[gd_scene load_steps=22 format=3 uid="uid://baut7kqf0ofcx"]
 
 [ext_resource type="Script" uid="uid://ckgbqkcg06ipf" path="res://scripts/enemy/EnemigoBase.gd" id="1_rdiwc"]
 [ext_resource type="Texture2D" uid="uid://bk4twkgqtn5hb" path="res://assets/sprites/enemies/eidle.png" id="2_1b6pj"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://cog2mumkf0hwn" path="res://assets/sprites/enemies/death.png" id="4_hnrh2"]
 [ext_resource type="Script" uid="uid://ftq6r868axci" path="res://scripts/enemy/EnemyHealth.gd" id="5_pocmn"]
 [ext_resource type="Texture2D" uid="uid://cjl0a7ns3h6sa" path="res://assets/sprites/enemies/prep.png" id="6_uhel1"]
+[ext_resource type="AudioStream" uid="uid://b4cap6xwjyt8l" path="res://assets/fx/combat/punch.wav" id="12_hnrh2"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_apqgt"]
 radius = 13.8701935
@@ -89,35 +90,38 @@ animations = [{
 "loop": false,
 "name": &"prep",
 "speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_uhel1")
+}],
+"loop": false,
+"name": &"salt",
+"speed": 5.0
 }]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_yfqpq"]
 radius = 14.0
 height = 62.0
 
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_uhel1"]
+random_pitch = 1.29
+streams_count = 1
+stream_0/stream = ExtResource("12_hnrh2")
+
 [node name="EnemigoBase" type="CharacterBody2D" groups=["enemigos", "enemigos_androides"]]
 light_mask = 5
 visibility_layer = 5
+position = Vector2(0, 0.99999994)
 scale = Vector2(0.8971965, 0.8971965)
-collision_layer = 8
-collision_mask = 3
+collision_layer = 9
+collision_mask = 137
 script = ExtResource("1_rdiwc")
-vertical_mode = null
-altura_volando = null
-bob_amp = null
-bob_speed = null
-ignorar_colision_con_unidades_en_aire = null
-capas_unidades = null
-velocidad_max = null
-attack_damage = null
-ataque_delay = null
-fuerza_salto = null
-gravedad = null
-kb_decay = null
+attack_damage = 15.0
 
 [node name="Sombra" type="Sprite2D" parent="."]
 modulate = Color(1, 1, 1, 0.39215687)
-position = Vector2(0, 100)
+position = Vector2(3.3437495, 67.98956)
 scale = Vector2(0.29156652, 0.29156652)
 texture = ExtResource("2_w1ef1")
 
@@ -131,17 +135,16 @@ position = Vector2(0, 16.718746)
 scale = Vector2(1.3045433, 1.3045433)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Visual"]
-position = Vector2(-4, -23)
+position = Vector2(-3.4175432, -41.8649)
 scale = Vector2(0.26231822, 0.26231822)
 sprite_frames = SubResource("SpriteFrames_rdiwc")
 animation = &"idle"
-frame_progress = 0.58685756
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(5.594047, 5.594047)
 
 [node name="Facing" type="Node2D" parent="."]
-position = Vector2(2.2291603, -4.7683716e-07)
+position = Vector2(-7.6293945e-06, 1.1145825)
 scale = Vector2(3.1030824, 2.936064)
 
 [node name="at" type="Area2D" parent="Facing"]
@@ -149,12 +152,14 @@ collision_layer = 0
 collision_mask = 2
 
 [node name="Hit" type="CollisionShape2D" parent="Facing/at"]
-position = Vector2(20, 14)
+position = Vector2(18.318478, 8.731216)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_yfqpq")
 disabled = true
 
 [node name="Deteccion" type="Area2D" parent="Facing"]
+position = Vector2(0.35918766, 3.7961807)
+scale = Vector2(0.87837756, 0.6595441)
 collision_layer = 0
 collision_mask = 2
 
@@ -196,3 +201,4 @@ script = ExtResource("5_pocmn")
 
 [node name="dano" type="AudioStreamPlayer2D" parent="."]
 scale = Vector2(0.99999994, 0.99999994)
+stream = SubResource("AudioStreamRandomizer_uhel1")

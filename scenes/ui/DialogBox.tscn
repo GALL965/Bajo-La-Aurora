@@ -1,0 +1,93 @@
+[gd_scene load_steps=7 format=3 uid="uid://d3o8r8engudqb"]
+
+[ext_resource type="Script" uid="uid://b2wq5eyvaq6yl" path="res://scripts/ui/DialogBox.gd" id="1_y63tx"]
+[ext_resource type="Texture2D" uid="uid://eauouyuabbtn" path="res://assets/sprites/ui/dialogM.png" id="2_6c3q2"]
+[ext_resource type="Shader" uid="uid://cno0dpk6wwuds" path="res://assets/shaders/glass_blur.gdshader" id="2_kgmwf"]
+[ext_resource type="FontFile" uid="uid://dkja42cqmkjic" path="res://assets/fonts/Ubuntu-Regular.ttf" id="2_tsmfh"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y63tx"]
+shader = ExtResource("2_kgmwf")
+shader_parameter/blur_amount = 1.0
+shader_parameter/blur_pixel = 1.5
+shader_parameter/darken = 0.22
+shader_parameter/overlay_alpha = 6.1
+
+[sub_resource type="FontVariation" id="FontVariation_kgmwf"]
+base_font = ExtResource("2_tsmfh")
+
+[node name="DialogBox" type="Control"]
+layout_mode = 3
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = 577.0
+offset_top = 25.0
+offset_right = 577.0
+offset_bottom = 25.0
+grow_horizontal = 2
+scale = Vector2(0.6314782, 0.6314782)
+script = ExtResource("1_y63tx")
+
+[node name="Marco" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -746.78644
+offset_top = -89.442314
+offset_right = 1053.2136
+offset_bottom = 510.55768
+grow_horizontal = 2
+texture = ExtResource("2_6c3q2")
+
+[node name="DialogPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+
+[node name="Relleno" type="ColorRect" parent="DialogPanel"]
+material = SubResource("ShaderMaterial_y63tx")
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -668.0
+offset_top = 37.999996
+offset_right = 532.0
+offset_bottom = 558.0
+grow_horizontal = 2
+scale = Vector2(1.3689939, 0.6597263)
+color = Color(0, 0, 0, 1)
+
+[node name="Padding" type="MarginContainer" parent="DialogPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -646.0
+offset_top = 51.0
+offset_right = 960.0
+offset_bottom = 363.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Row" type="HBoxContainer" parent="DialogPanel/Padding"]
+layout_mode = 2
+
+[node name="Portrait" type="TextureRect" parent="DialogPanel/Padding/Row"]
+custom_minimum_size = Vector2(312, 0)
+layout_mode = 2
+expand_mode = 1
+
+[node name="TextCol" type="VBoxContainer" parent="DialogPanel/Padding/Row"]
+custom_minimum_size = Vector2(500, 200)
+layout_mode = 2
+
+[node name="DialogText" type="RichTextLabel" parent="DialogPanel/Padding/Row/TextCol"]
+custom_minimum_size = Vector2(1000, 250)
+layout_mode = 2
+theme_override_fonts/normal_font = SubResource("FontVariation_kgmwf")
+theme_override_font_sizes/normal_font_size = 40
+
+[node name="VoicePlayer" type="AudioStreamPlayer" parent="DialogPanel"]

@@ -1,0 +1,181 @@
+[gd_scene load_steps=15 format=3 uid="uid://hunst43uko40"]
+
+[ext_resource type="Script" uid="uid://d3q48nnedn1sh" path="res://scenes/demo/gameplay_2.gd" id="1_6u4ya"]
+[ext_resource type="Texture2D" uid="uid://blsg3w8pojhgr" path="res://assets/sprites/fondos/fond.png" id="1_fdnla"]
+[ext_resource type="PackedScene" uid="uid://f84k6k4veyhm" path="res://scenes/player/Leray.tscn" id="1_lrm4t"]
+[ext_resource type="Script" uid="uid://dqjtte2dth71s" path="res://scenes/demo/parallax.gd" id="2_6cibq"]
+[ext_resource type="Script" uid="uid://xkxcnngy8a7o" path="res://scripts/Camera/BrawlerCamera.gd" id="2_bwdth"]
+[ext_resource type="Texture2D" uid="uid://eh2kh1dpktg6" path="res://assets/sprites/terrain/intro/bars.png" id="2_i0pyw"]
+[ext_resource type="Texture2D" uid="uid://wbuohmisrsm5" path="res://assets/sprites/terrain/intro/train.png" id="3_bti40"]
+[ext_resource type="Texture2D" uid="uid://b33fgjudr3g3y" path="res://assets/sprites/terrain/intro/edif1.png" id="3_sovgu"]
+[ext_resource type="AudioStream" uid="uid://t7af8o6x6ndm" path="res://assets/audio/music/Smash the System.mp3" id="8_sovgu"]
+[ext_resource type="PackedScene" uid="uid://diduya384mpvg" path="res://scenes/ui/PauseMenu.tscn" id="9_rld37"]
+[ext_resource type="PackedScene" uid="uid://d3o8r8engudqb" path="res://scenes/ui/DialogBox.tscn" id="11_qdjrh"]
+[ext_resource type="PackedScene" uid="uid://iclymlq53aj2" path="res://scenes/hud/HUD.tscn" id="12_tgtu1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_rld37"]
+size = Vector2(1307, 48.5)
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_6u4ya"]
+radius = 43.5
+height = 425.01044
+
+[node name="Gameplay2" type="Node2D"]
+script = ExtResource("1_6u4ya")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer"]
+offset_left = -96.0
+offset_top = -106.0
+offset_right = 5024.0
+offset_bottom = 2054.0
+scale = Vector2(0.3970138, 0.3970138)
+texture = ExtResource("1_fdnla")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Parallax" type="Node2D" parent="World"]
+script = ExtResource("2_6cibq")
+
+[node name="CityBack" type="Node2D" parent="World/Parallax"]
+position = Vector2(-643, -262)
+
+[node name="cityA" type="Sprite2D" parent="World/Parallax/CityBack"]
+scale = Vector2(0.3634493, 0.3634493)
+texture = ExtResource("3_sovgu")
+centered = false
+
+[node name="cityB" type="Sprite2D" parent="World/Parallax/CityBack"]
+position = Vector2(2000, 0)
+scale = Vector2(0.363, 0.363)
+texture = ExtResource("3_sovgu")
+centered = false
+
+[node name="WallsFront" type="Node2D" parent="World/Parallax"]
+position = Vector2(-826, -3)
+
+[node name="wall1" type="Sprite2D" parent="World/Parallax/WallsFront"]
+position = Vector2(-777, -1507)
+scale = Vector2(0.90250826, 0.90250826)
+texture = ExtResource("2_i0pyw")
+centered = false
+
+[node name="wall2" type="Sprite2D" parent="World/Parallax/WallsFront"]
+position = Vector2(3500, -1507)
+scale = Vector2(0.90250826, 0.90250826)
+texture = ExtResource("2_i0pyw")
+centered = false
+
+[node name="wall3" type="Sprite2D" parent="World/Parallax/WallsFront"]
+position = Vector2(7000, -1507)
+scale = Vector2(0.90250826, 0.90250826)
+texture = ExtResource("2_i0pyw")
+centered = false
+
+[node name="wall4" type="Sprite2D" parent="World/Parallax/WallsFront"]
+position = Vector2(10500, -1507)
+scale = Vector2(0.90250826, 0.90250826)
+texture = ExtResource("2_i0pyw")
+centered = false
+
+[node name="wall5" type="Sprite2D" parent="World/Parallax/WallsFront"]
+position = Vector2(15000, -1507)
+scale = Vector2(0.90250826, 0.90250826)
+texture = ExtResource("2_i0pyw")
+centered = false
+
+[node name="Node2D" type="Node2D" parent="World/Parallax"]
+
+[node name="P0" type="Marker2D" parent="World/Parallax/Node2D"]
+
+[node name="P1" type="Marker2D" parent="World/Parallax/Node2D"]
+
+[node name="P2" type="Marker2D" parent="World/Parallax/Node2D"]
+
+[node name="Enemies" type="Node2D" parent="World"]
+
+[node name="Truck" type="Sprite2D" parent="World"]
+position = Vector2(-38, 139)
+scale = Vector2(0.28339142, 0.28339142)
+texture = ExtResource("3_bti40")
+
+[node name="Node2D2" type="Node2D" parent="World"]
+
+[node name="ExtractionRocket" type="Sprite2D" parent="World"]
+
+[node name="Colision" type="StaticBody2D" parent="World"]
+position = Vector2(97, 26)
+collision_layer = 7
+collision_mask = 7
+
+[node name="col1" type="CollisionShape2D" parent="World/Colision"]
+shape = SubResource("RectangleShape2D_rld37")
+
+[node name="col2" type="CollisionShape2D" parent="World/Colision"]
+position = Vector2(-613, 166)
+rotation = -0.49721548
+shape = SubResource("CapsuleShape2D_6u4ya")
+
+[node name="col3" type="CollisionShape2D" parent="World/Colision"]
+position = Vector2(-16, 337)
+shape = SubResource("RectangleShape2D_rld37")
+
+[node name="col4" type="CollisionShape2D" parent="World/Colision"]
+position = Vector2(604, 157)
+shape = SubResource("CapsuleShape2D_6u4ya")
+
+[node name="Leray" parent="." instance=ExtResource("1_lrm4t")]
+position = Vector2(-164.99994, 129.99998)
+hp_max = 100.0
+i_frames_time = 0.45
+knockback_ref_dmg = 10.0
+knockback_min_mult = 0.35
+knockback_max_mult = 2.0
+knockback_duration = 0.12
+knockback_friction = 2600.0
+gravedad_suelo = 0.0
+
+[node name="BrawlerCamera" type="Node2D" parent="."]
+script = ExtResource("2_bwdth")
+target_path = NodePath("../Leray")
+metadata/_custom_type_script = "uid://xkxcnngy8a7o"
+
+[node name="Camera2D" type="Camera2D" parent="BrawlerCamera"]
+
+[node name="Timers" type="Node" parent="."]
+
+[node name="WaveTimer" type="Timer" parent="Timers"]
+wait_time = 124.0
+
+[node name="SpawnTimer" type="Timer" parent="Timers"]
+wait_time = 7.0
+
+[node name="sfx" type="Node" parent="."]
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("8_sovgu")
+volume_db = 12.072
+autoplay = true
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_rld37")]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="DialogBox" parent="UI" instance=ExtResource("11_qdjrh")]
+offset_left = -118.0
+offset_top = 20.0
+offset_right = -118.0
+offset_bottom = 20.0
+
+[node name="hud" parent="." instance=ExtResource("12_tgtu1")]
+visible = false
+anim_fast_time = 0.12
+anim_settle_time = 0.1
+overshoot = 0.04
+anim_duration = 0.25
+intro_fade_time = 0.35
+intro_blink_count = 2
+intro_fill_time = 0.45
+hide_mana = true

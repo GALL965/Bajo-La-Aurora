@@ -1,0 +1,61 @@
+[gd_scene load_steps=10 format=3 uid="uid://bxjay2afpo36s"]
+
+[ext_resource type="Script" uid="uid://bc3shdfd5yioa" path="res://scripts/spells/MagicBeam.gd" id="1_p40j0"]
+[ext_resource type="Texture2D" uid="uid://b6svaihkmf6rk" path="res://assets/sprites/1/Explosion_1.png" id="1_xdm2n"]
+[ext_resource type="Texture2D" uid="uid://cei46jd76chy4" path="res://assets/sprites/1/Explosion_2.png" id="2_p40j0"]
+[ext_resource type="Texture2D" uid="uid://imhd30y04vof" path="res://assets/sprites/1/Explosion_3.png" id="3_ydhq2"]
+[ext_resource type="Texture2D" uid="uid://uqk6lo5gyip8" path="res://assets/sprites/1/Explosion_4.png" id="4_xbnee"]
+[ext_resource type="Texture2D" uid="uid://kr2g6fk0bvyg" path="res://assets/sprites/1/Explosion_5.png" id="5_pokqx"]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_0481v"]
+radius = 30.0
+height = 1372.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xbnee"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ve3eu"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_xdm2n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_p40j0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_ydhq2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_xbnee")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_pokqx")
+}],
+"loop": false,
+"name": &"default",
+"speed": 30.0
+}]
+
+[node name="MagicBeam" type="Node2D"]
+scale = Vector2(1.7583641, 1.7583641)
+script = ExtResource("1_p40j0")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_mask = 9
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+position = Vector2(664, 0)
+rotation = -1.5707964
+shape = SubResource("CapsuleShape2D_0481v")
+
+[node name="Visual" type="AnimatedSprite2D" parent="."]
+material = SubResource("ShaderMaterial_xbnee")
+position = Vector2(642, 6)
+rotation = -1.5707964
+scale = Vector2(-0.899682, 1.9801326)
+sprite_frames = SubResource("SpriteFrames_ve3eu")
+frame = 4
+frame_progress = 1.0
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true

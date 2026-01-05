@@ -26,6 +26,10 @@ var _usado_en_el_aire: bool = false
 # Input
 # =========================
 func handle_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.echo:
+		return
+
+	
 	if event.is_action_pressed("A"):
 		_process_tap(-1)
 	elif event.is_action_pressed("D"):

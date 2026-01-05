@@ -1,4 +1,4 @@
-[gd_scene load_steps=57 format=3 uid="uid://f84k6k4veyhm"]
+[gd_scene load_steps=70 format=3 uid="uid://f84k6k4veyhm"]
 
 [ext_resource type="Script" uid="uid://dkxaggqwr32ke" path="res://scripts/player/Leray.gd" id="1_cvesf"]
 [ext_resource type="Texture2D" uid="uid://c35e12haqrqys" path="res://assets/sprites/characters/Leray/AD1.png" id="2_2esev"]
@@ -15,13 +15,12 @@
 [ext_resource type="Texture2D" uid="uid://dfrb4cy4n3nv" path="res://assets/sprites/characters/Leray/golpe4.png" id="5_ef0j0"]
 [ext_resource type="Texture2D" uid="uid://b5wbsh5hq5k2j" path="res://assets/sprites/characters/Leray/Lsalt1.png" id="7_mvq1n"]
 [ext_resource type="Texture2D" uid="uid://btv2u8k67hxr3" path="res://assets/sprites/characters/Leray/Lsalt3.png" id="8_55423"]
+[ext_resource type="Texture2D" uid="uid://bhefc04sdsgqm" path="res://assets/sprites/characters/Leray/cam.png" id="10_sdlyj"]
 [ext_resource type="AudioStream" uid="uid://crfqyhmcsmqn0" path="res://assets/audio/sfx/game/golpA.wav" id="15_ef0j0"]
 [ext_resource type="Script" uid="uid://bdi4nc13kc5ii" path="res://scripts/player/MagicCaster.gd" id="16_55423"]
+[ext_resource type="PackedScene" uid="uid://bxjay2afpo36s" path="res://scenes/spells/MagicBeam.tscn" id="17_1lq4r"]
 [ext_resource type="PackedScene" uid="uid://bg4tuytduasmi" path="res://scenes/hud/MagicHUD.tscn" id="18_utvun"]
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_me31t"]
-radius = 47.0
-height = 230.0
+[ext_resource type="AudioStream" uid="uid://dhnrnponm66b8" path="res://assets/fx/combat/hit.wav" id="19_4cgnq"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ef0j0"]
 atlas = ExtResource("3_6k11w")
@@ -163,6 +162,34 @@ region = Rect2(2880, 0, 720, 720)
 atlas = ExtResource("2_meyms")
 region = Rect2(3600, 0, 720, 720)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_2khf7"]
+atlas = ExtResource("10_sdlyj")
+region = Rect2(0, 0, 722, 722)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5pofv"]
+atlas = ExtResource("10_sdlyj")
+region = Rect2(722, 0, 722, 722)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iv1bk"]
+atlas = ExtResource("10_sdlyj")
+region = Rect2(1444, 0, 722, 722)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_iyy0w"]
+atlas = ExtResource("10_sdlyj")
+region = Rect2(1444, 722, 722, 722)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gqcn8"]
+atlas = ExtResource("10_sdlyj")
+region = Rect2(2166, 722, 722, 722)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rikp3"]
+atlas = ExtResource("10_sdlyj")
+region = Rect2(0, 1444, 722, 722)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mhdty"]
+atlas = ExtResource("10_sdlyj")
+region = Rect2(722, 1444, 722, 722)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_2esev"]
 animations = [{
 "frames": [{
@@ -207,6 +234,14 @@ animations = [{
 "loop": true,
 "name": &"dash",
 "speed": 30.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_2esev")
+}],
+"loop": true,
+"name": &"falling",
+"speed": 5.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -370,26 +405,82 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_2khf7")
+}, {
+"duration": 1.0,
+"texture": null
+}, {
+"duration": 1.0,
+"texture": null
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5pofv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iv1bk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_iyy0w")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gqcn8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rikp3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mhdty")
+}],
+"loop": false,
+"name": &"recup",
+"speed": 4.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": ExtResource("7_mvq1n")
 }, {
 "duration": 1.0,
 "texture": ExtResource("8_55423")
 }],
-"loop": true,
+"loop": false,
 "name": &"salto",
 "speed": 5.0
 }]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_me31t"]
+radius = 47.0
+height = 230.0
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_sdlyj"]
+radius = 31.280909
+height = 112.61127
+
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_mvq1n"]
+random_pitch = 1.57
 streams_count = 1
 stream_0/stream = ExtResource("15_ef0j0")
 
-[node name="Leray" type="CharacterBody2D"]
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_sdlyj"]
+random_pitch = 1.28
+streams_count = 1
+stream_0/stream = ExtResource("19_4cgnq")
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_vp1cn"]
+radius = 29.716862
+height = 112.61127
+
+[node name="Leray" type="CharacterBody2D" groups=["jugador"]]
 scale = Vector2(0.6393676, 0.6393676)
-collision_layer = 2
+collision_layer = 10
 collision_mask = 9
 script = ExtResource("1_cvesf")
 hp_max = null
+i_frames_time = null
+knockback_ref_dmg = null
+knockback_min_mult = null
+knockback_max_mult = null
+knockback_duration = null
+knockback_friction = null
 gravedad_suelo = null
 
 [node name="Sombra" type="Sprite2D" parent="."]
@@ -397,11 +488,6 @@ modulate = Color(1, 1, 1, 0.39215687)
 position = Vector2(0, 100)
 scale = Vector2(0.29156655, 0.29156655)
 texture = ExtResource("2_mvq1n")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 50.049454)
-scale = Vector2(0.9565789, 0.37201145)
-shape = SubResource("CapsuleShape2D_me31t")
 
 [node name="Visual" type="Node2D" parent="."]
 position = Vector2(3.828422, -42.112644)
@@ -427,9 +513,9 @@ collision_layer = 0
 collision_mask = 8
 
 [node name="Hitbox" type="CollisionShape2D" parent="HitboxArea"]
-position = Vector2(0, 48.999996)
-scale = Vector2(0.89577156, 0.30033082)
-shape = SubResource("CapsuleShape2D_me31t")
+visible = false
+position = Vector2(0, 45.35732)
+shape = SubResource("CapsuleShape2D_sdlyj")
 
 [node name="Timers" type="Node" parent="."]
 
@@ -454,8 +540,10 @@ script = ExtResource("4_4gbb3")
 [node name="Attack" type="Node" parent="Components"]
 script = ExtResource("5_1qgct")
 
-[node name="MagicCaster" type="Node" parent="Components"]
+[node name="MagicCaster" type="Node" parent="Components" node_paths=PackedStringArray("hud")]
 script = ExtResource("16_55423")
+hud = NodePath("../../MagicHud")
+beam_scene = ExtResource("17_1lq4r")
 
 [node name="Audio" type="Node" parent="."]
 
@@ -463,4 +551,12 @@ script = ExtResource("16_55423")
 stream = SubResource("AudioStreamRandomizer_mvq1n")
 volume_db = 8.32
 
+[node name="dano" type="AudioStreamPlayer2D" parent="Audio"]
+stream = SubResource("AudioStreamRandomizer_sdlyj")
+volume_db = 1.926
+
 [node name="MagicHud" parent="." instance=ExtResource("18_utvun")]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-4.7683716e-07, 40.665184)
+shape = SubResource("CapsuleShape2D_vp1cn")

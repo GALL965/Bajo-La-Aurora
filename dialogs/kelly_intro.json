@@ -1,0 +1,14 @@
+{
+  "conversation": [
+    {
+      "text": "Hola guapa, me llamo Kelly.",
+      "expression": "res://assets/sprites/kells2.png",
+      "voice": "res://assets/fx/voice/mon.wav"
+    },
+    {
+      "text": "Pero tú me puedes decir mi reina.",
+      "expression": "res://assets/sprites/kells3.png",
+      "voice": "res://assets/fx/voice/mon.wav"
+    }
+  ]
+}

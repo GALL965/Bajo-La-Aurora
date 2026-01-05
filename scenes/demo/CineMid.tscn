@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://dt2fl5s8yuy6c"]
+
+[ext_resource type="Script" uid="uid://casjtoyd70nlh" path="res://scripts/Demo/cine_mid.gd" id="1_sekoh"]
+[ext_resource type="VideoStream" uid="uid://c3gq47ldgwa4b" path="res://assets/video/cin1.ogv" id="2_s50jc"]
+
+[node name="CineMid" type="Node2D"]
+script = ExtResource("1_sekoh")
+
+[node name="VideoPlayer" type="VideoStreamPlayer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(2.9172072, 3.0490546)
+stream = ExtResource("2_s50jc")

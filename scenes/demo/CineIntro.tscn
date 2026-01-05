@@ -1,0 +1,16 @@
+[gd_scene load_steps=3 format=3 uid="uid://e2jjpnwli55k"]
+
+[ext_resource type="Script" uid="uid://ddl4m45jt10ju" path="res://scripts/Demo/cine_intro.gd" id="1_f2j4w"]
+[ext_resource type="VideoStream" uid="uid://2tg4jv5wkwuc" path="res://assets/video/Intro.ogv" id="2_h4qv8"]
+
+[node name="CineIntro" type="Node2D"]
+script = ExtResource("1_f2j4w")
+
+[node name="VideoPlayer" type="VideoStreamPlayer" parent="."]
+offset_left = 228.0
+offset_top = 8.999999
+offset_right = 268.0
+offset_bottom = 49.0
+scale = Vector2(18.32708, 15.634915)
+stream = ExtResource("2_h4qv8")
+expand = true

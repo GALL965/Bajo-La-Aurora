@@ -18,7 +18,9 @@ signal spell_failed(reason: String)
 @export var mana_regen_per_sec: float = 25.0
 
 # --- Referencias ---
-@export var hud_path: NodePath
+@export var hud: MagicHUD
+@onready var _hud: MagicHUD = hud
+@export var beam_scene: PackedScene
 
 @export var arc_bolt_scene: PackedScene # opcional (si luego creas la escena)
 
@@ -27,9 +29,8 @@ var _sequence: Array[String] = []
 
 var _regen_delay_timer: Timer
 var _regen_active: bool = false
+@onready var _player := get_parent().get_parent()
 
-@onready var _player := get_parent() # se asume hijo directo de Leray en Components
-@onready var _hud := get_node_or_null(hud_path)
 
 class SpellDef:
 	var id: String
@@ -124,10 +125,10 @@ func _enter_magic_mode() -> void:
 
 	# HUD
 	if _hud:
-		if _hud.has_method("set_active"):
-			_hud.set_active(true)
-		if _hud.has_method("set_sequence"):
-			_hud.set_sequence(_sequence)
+		_hud.set_active(true)
+		_hud.set_sequence(_sequence)
+	else:
+		push_warning("MagicCaster: HUD no asignado")
 
 	emit_signal("mode_changed", true)
 
@@ -222,9 +223,15 @@ func _rune_from_key(keycode: int) -> String:
 		_: return ""
 
 func _build_spellbook() -> void:
+	_spells["ASDW"] = SpellDef.new(
+	"magic_beam",
+	30.0,
+	Callable(self, "_spell_magic_beam")
+)
+
 	# Ejemplos (orden importa)
 	# ASDW -> ataque (proyectil/escena)
-	_spells["ASDW"] = SpellDef.new("arc_bolt", 25.0, Callable(self, "_spell_arc_bolt"))
+	_spells["WASD"] = SpellDef.new("arc_bolt", 25.0, Callable(self, "_spell_arc_bolt"))
 
 	# WDAS -> convertir mana en vida
 	_spells["WDAS"] = SpellDef.new("mana_to_hp", 15.0, Callable(self, "_spell_mana_to_hp"))
@@ -259,3 +266,20 @@ func _spell_mana_to_hp() -> void:
 
 	var heal := 20.0
 	_player.hp = min(_player.hp_max, _player.hp + heal)
+
+
+func _spell_magic_beam() -> void:
+	print("CAST MAGIC BEAM")
+	if beam_scene == null:
+		push_warning("MagicBeam scene not assigned")
+		return
+
+	var beam: MagicBeam = beam_scene.instantiate()
+	get_tree().current_scene.add_child(beam)
+
+	var dir := 1
+	if _player and "mirando_derecha" in _player and not _player.mirando_derecha:
+		dir = -1
+
+	beam.global_position = _player.global_position + Vector2(40 * dir, -20)
+	beam.setup(dir)

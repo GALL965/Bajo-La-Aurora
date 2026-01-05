@@ -3,33 +3,33 @@ class_name BrawlerCamera
 
 @export var target_path: NodePath
 @export var deadzone_width: float = 420
-@export var deadzone_up: float = -20
-@export var deadzone_down: float = 30
+@export var deadzone_up: float = -110
+@export var deadzone_down: float = 200
 
 
-#@export var deadzone_size: Vector2 = Vector2(420, 220)
+
 @export var follow_speed: float = 3.0
-@export var max_follow_speed: float = 1200.0
-@export var dash_lag_multiplier: float = 0.6
 
 @onready var camera: Camera2D = $Camera2D
+
 var target: Node2D
 var _desired_position: Vector2
 
 func _ready():
-	camera.enabled = true
+	if camera:
+		camera.make_current()
 
 	if target_path != NodePath():
 		target = get_node_or_null(target_path)
 
 	if not target:
-		push_warning("BrawlerCamera: target no asignado")
+		push_error("BrawlerCamera: target_path inválido -> " + str(target_path))
 		return
 
 	global_position = target.global_position
 	_desired_position = global_position
-
-func _process(delta):
+	
+func _process(delta: float) -> void:
 	if not target:
 		return
 
@@ -38,7 +38,7 @@ func _process(delta):
 	var diff: Vector2 = target_pos - cam_pos
 
 	# =========================
-	# Dead zone X (simétrica)
+	# Dead zone X
 	# =========================
 	var half_x := deadzone_width * 0.5
 
@@ -48,9 +48,7 @@ func _process(delta):
 		_desired_position.x = target_pos.x + half_x
 
 	# =========================
-	# Dead zone Y (asimétrica)
-	#   - más margen arriba
-	#   - menos margen abajo
+	# Dead zone Y
 	# =========================
 	if diff.y < -deadzone_up:
 		_desired_position.y = target_pos.y + deadzone_up
@@ -58,7 +56,7 @@ func _process(delta):
 		_desired_position.y = target_pos.y - deadzone_down
 
 	# =========================
-	# Seguimiento suave
+	# Movimiento suave
 	# =========================
 	global_position = global_position.lerp(
 		_desired_position,

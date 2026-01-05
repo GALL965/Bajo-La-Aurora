@@ -3,6 +3,19 @@ class_name EnemigoBase
 
 
 enum VerticalMode { SUELO, VOLANDO }
+@export var prob_salto_amenaza: float = 0.015      # por segundo aprox (lo modulamos)
+@export var prob_salto_espejo: float = 0.35        # chance de saltar cuando el jugador salta
+@export var aire_altura_min_para_reaccion: float = 40.0
+@export var aire_rango_x_para_reaccion: float = 140.0
+@export var salto_cooldown: float = 1.2
+var _base_visual_pos: Vector2
+var _visual_base_scale: Vector2
+
+var _salto_cd_left: float = 0.0
+var t_espera: float = 0.0
+@export var espera_post_ataque := 0.45
+var _facing_right: bool = true
+@export var facing_deadzone_x: float = 10.0
 
 @export var vertical_mode: VerticalMode = VerticalMode.SUELO
 @export var altura_volando: float = 140.0
@@ -62,19 +75,31 @@ var kb_time_left: float = 0.0
 @onready var t_muerte: Timer = $Timers/MuerteTimer
 @onready var audio_dano: AudioStreamPlayer2D = get_node_or_null("dano")
 
-var _base_visual_pos: Vector2
 
 func _ready() -> void:
+
 	_mask_base = int(collision_mask)
 
 	add_to_group("enemigos")
 	add_to_group("enemigos_androides")
 
 	_base_visual_pos = visual.position
+	_visual_base_scale = visual.scale
+	_visual_base_scale.x = abs(_visual_base_scale.x) # aseguramos base positiva
+
 
 	var cand = get_tree().get_nodes_in_group("jugador")
 	if cand.size() > 0:
 		jugador = cand[0]
+		
+	
+	# Reacción al salto del jugador (si existe el componente Vertical)
+	if jugador:
+		var v = jugador.get_node_or_null("Components/Vertical")
+		if v and v.has_signal("jumped"):
+			v.jumped.connect(_on_player_jumped)
+
+	
 
 	senses.setup(self, jugador)
 	move.setup(self, jugador)
@@ -105,8 +130,18 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if estado == "esperando":
+		t_espera -= delta
+		if t_espera <= 0.0:
+			estado = "orbitando"
+
+
 	if health and not health.esta_vivo():
 		return
+		
+	if _salto_cd_left > 0.0:
+		_salto_cd_left -= delta
+
 
 	_process_vertical(delta)
 
@@ -137,6 +172,11 @@ func _physics_process(delta: float) -> void:
 
 	velocity = v
 	
+	# Deadzone mínima para evitar vibraciones
+	if velocity.length() < 8.0:
+		velocity = Vector2.ZERO
+
+	
 	if jugador and jugador.has_method("esta_en_el_aire") and bool(jugador.call("esta_en_el_aire")):
 		# Quita la capa del jugador de tu máscara (AJUSTA ESTE BIT)
 		const LAYER_PLAYER := 1 << 1  # si tu Player está en layer 2
@@ -144,7 +184,8 @@ func _physics_process(delta: float) -> void:
 	else:
 		collision_mask = _mask_base
 
-	
+	_try_threat_jump(delta)
+
 	move_and_slide()
 
 	_update_anim(v)
@@ -233,14 +274,35 @@ func get_altura_actual() -> float:
 	return altura
 
 func get_attack_damage() -> float:
-	return attack_damage
+	if attack_damage == null:
+		return 10.0
+	return float(attack_damage)
+
 
 func get_velocidad_max() -> float:
 	return velocidad_max
 
 # --- Señales internas ---
-func _on_jugador_detectado() -> void:
+func _on_jugador_detectado(p: Node2D) -> void:
+	if jugador == p and jugador != null:
+		return
+
+	jugador = p
+
+	if estado == "patrulla":
+		estado = "orbitando"
+
+	if move:
+		move.jugador = jugador
+	if combat:
+		combat.jugador = jugador
+
+	# Solo al primer detectado real
 	combat.procesar_jugador_detectado()
+
+
+
+
 
 func _on_solicitar_animacion(nombre: String) -> void:
 	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(nombre):
@@ -290,19 +352,29 @@ func _update_facing() -> void:
 	if jugador == null:
 		return
 
-	var derecha := true
-	if jugador.global_position.x < global_position.x:
-		derecha = false
+	# Hysteresis: evita flip-flop cuando estás “encima” del jugador en X
+	var dx := jugador.global_position.x - global_position.x
 
-	# Voltear solo el sprite (si existe)
-	if sprite:
-		sprite.flip_h = not derecha
+	var derecha := _facing_right
+	if abs(dx) > facing_deadzone_x:
+		derecha = (dx > 0.0)
+
+	_facing_right = derecha
 
 	var sign := 1.0
 	if not derecha:
 		sign = -1.0
 
-	# Reflejar hitboxes moviendo sus CollisionShape2D (NO scale)
+	# ====== VOLTEO VISUAL (robusto) ======
+	# Volteamos el nodo Visual completo (mejor que flip_h del sprite)
+	if visual:
+		visual.scale = Vector2(_visual_base_scale.x * sign, _visual_base_scale.y)
+
+	# Evita que el sprite “contraflippee” por algún otro ajuste
+	if sprite:
+		sprite.flip_h = false
+
+	# ====== HITBOXES (NO scale, solo posición) ======
 	if hit_shape:
 		var p := hit_shape.position
 		p.x = _hit_base_x * sign
@@ -312,6 +384,7 @@ func _update_facing() -> void:
 		var p2 := det_shape.position
 		p2.x = _det_base_x * sign
 		det_shape.position = p2
+
 
 
 func start_jump() -> void:
@@ -339,3 +412,61 @@ func _set_unit_collision_enabled(enabled: bool) -> void:
 
 func get_altura() -> float:
 	return altura
+
+
+func _try_threat_jump(delta: float) -> void:
+	if vertical_mode == VerticalMode.VOLANDO:
+		return
+	if en_el_aire:
+		return
+	if _salto_cd_left > 0.0:
+		return
+	if jugador == null:
+		return
+
+	# Solo amenaza si está en “agro” (ajusta si tu estado cambia)
+	if estado == "patrulla":
+		return
+
+	# Probabilidad por segundo -> convertida por delta
+	var p = prob_salto_amenaza * delta
+	if randf() < p:
+		start_jump()
+		_salto_cd_left = salto_cooldown
+
+
+func _on_player_jumped() -> void:
+	if vertical_mode == VerticalMode.VOLANDO:
+		return
+	if en_el_aire:
+		return
+	if _salto_cd_left > 0.0:
+		return
+	if jugador == null:
+		return
+
+	# Si el jugador va al aire y yo estoy relativamente alineado en X, intento contestar
+	var h := 0.0
+	if jugador.has_method("get_altura"):
+		h = float(jugador.call("get_altura"))
+	elif jugador.has_method("get_altura_actual"):
+		h = float(jugador.call("get_altura_actual"))
+
+	if h < aire_altura_min_para_reaccion:
+		return
+
+	var dx = abs(jugador.global_position.x - global_position.x)
+	if dx > aire_rango_x_para_reaccion:
+		return
+
+	if randf() < prob_salto_espejo:
+		start_jump()
+		_salto_cd_left = salto_cooldown
+
+
+func puede_atacar() -> bool:
+	if not det_node:
+		return false
+
+	var bodies = det_node.get_overlapping_bodies()
+	return jugador in bodies

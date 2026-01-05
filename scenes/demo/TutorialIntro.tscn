@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://c2m1bo45m6tkn"]
+
+[ext_resource type="Script" uid="uid://cbblsyncds4hg" path="res://scripts/Demo/tutorial_intro.gd" id="1_bxljp"]
+[ext_resource type="PackedScene" uid="uid://f84k6k4veyhm" path="res://scenes/player/Leray.tscn" id="2_3tkqj"]
+[ext_resource type="PackedScene" uid="uid://d3o8r8engudqb" path="res://scenes/ui/DialogBox.tscn" id="3_ajs23"]
+[ext_resource type="Script" uid="uid://xkxcnngy8a7o" path="res://scripts/Camera/BrawlerCamera.gd" id="4_77jvq"]
+[ext_resource type="Script" uid="uid://3rj8qdqg14pg" path="res://scenes/demo/exit_trigger.gd" id="5_ajs23"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_77jvq"]
+size = Vector2(316.75, 962)
+
+[node name="TutorialIntro" type="Node2D"]
+script = ExtResource("1_bxljp")
+
+[node name="Player" parent="." instance=ExtResource("2_3tkqj")]
+collision_layer = 3
+
+[node name="BrawlerCamera" type="Node2D" parent="."]
+script = ExtResource("4_77jvq")
+target_path = NodePath("../Player")
+deadzone_down = 350.0
+metadata/_custom_type_script = "uid://xkxcnngy8a7o"
+
+[node name="Camera2D" type="Camera2D" parent="BrawlerCamera"]
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="DialogBox" parent="UI" instance=ExtResource("3_ajs23")]
+offset_left = -118.0
+offset_top = 20.0
+offset_right = -118.0
+offset_bottom = 20.0
+
+[node name="ExitTrigger" type="Area2D" parent="."]
+position = Vector2(1398, -22)
+script = ExtResource("5_ajs23")
+require_dialog_finished = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitTrigger"]
+position = Vector2(534, 30)
+shape = SubResource("RectangleShape2D_77jvq")
+
+[connection signal="body_entered" from="ExitTrigger" to="ExitTrigger" method="_on_body_entered"]

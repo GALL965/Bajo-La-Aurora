@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://hf3lu6gbeoqx"]
+
+[ext_resource type="Script" uid="uid://bn38bqd22eg71" path="res://scenes/test/dialog_test.gd" id="1_gy7v7"]
+[ext_resource type="PackedScene" uid="uid://d3o8r8engudqb" path="res://scenes/ui/DialogBox.tscn" id="2_22d2u"]
+[ext_resource type="Texture2D" uid="uid://3ieiqkhrnpsa" path="res://fond.png" id="3_22d2u"]
+
+[node name="DialogTest" type="Node2D"]
+script = ExtResource("1_gy7v7")
+dialog_scene = ExtResource("2_22d2u")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+offset_left = -68.00001
+offset_top = -39.000004
+offset_right = 2290.0
+offset_bottom = 1247.0
+scale = Vector2(0.7533905, 0.7533905)
+texture = ExtResource("3_22d2u")
