@@ -470,3 +470,8 @@ func puede_atacar() -> bool:
 
 	var bodies = det_node.get_overlapping_bodies()
 	return jugador in bodies
+
+
+func _exit_tree() -> void:
+	if Engine.has_singleton("CombatDirector"):
+		CombatDirector.release_attack(self)

@@ -471,8 +471,8 @@ height = 112.61127
 
 [node name="Leray" type="CharacterBody2D" groups=["jugador"]]
 scale = Vector2(0.6393676, 0.6393676)
-collision_layer = 10
-collision_mask = 9
+collision_layer = 2
+collision_mask = 129
 script = ExtResource("1_cvesf")
 hp_max = null
 i_frames_time = null

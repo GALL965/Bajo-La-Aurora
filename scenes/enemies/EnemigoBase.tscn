@@ -114,8 +114,8 @@ light_mask = 5
 visibility_layer = 5
 position = Vector2(0, 0.99999994)
 scale = Vector2(0.8971965, 0.8971965)
-collision_layer = 9
-collision_mask = 137
+collision_layer = 8
+collision_mask = 129
 script = ExtResource("1_rdiwc")
 attack_damage = 15.0
 

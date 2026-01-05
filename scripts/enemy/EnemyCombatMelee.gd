@@ -174,9 +174,9 @@ func _iniciar_ataque() -> void:
 		owner_enemy.set("estado", "preparando")
 		owner_enemy.set("animacion_en_curso", true)
 
-	var mv = owner_enemy.get_node_or_null("Movement")
-	if mv and mv.has_method("activar_lock_melee"):
-		mv.call("activar_lock_melee", float(jugador.global_position.y))
+	#var mv = owner_enemy.get_node_or_null("Movement")
+	#if mv and mv.has_method("activar_lock_melee"):
+	#	mv.call("activar_lock_melee", float(jugador.global_position.y))
 
 
 	emit_signal("solicitar_animacion", "prep")
