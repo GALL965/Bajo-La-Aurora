@@ -23,14 +23,11 @@ func _scroll_layer(layer: Node2D, speed: float, delta: float) -> void:
 		if c is Node2D:
 			c.position.x -= speed * delta
 
-	# ancho real del tile
 	var first := layer.get_child(0) as Node2D
 	var width := _get_sprite_width(first)
 
-	# reciclar los que salieron
 	for c in layer.get_children():
 		if c.position.x <= -width:
-			# buscar el más a la derecha
 			var max_x = c.position.x
 			for other in layer.get_children():
 				if other.position.x > max_x:

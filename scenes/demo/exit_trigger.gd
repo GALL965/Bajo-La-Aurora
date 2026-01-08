@@ -35,7 +35,6 @@ func _on_body_entered(body: Node) -> void:
 	_used = true
 	set_deferred("monitoring", false)
 
-	# Llamada correcta al Autoload
 	if has_node("/root/Demoflow"):
 		get_node("/root/Demoflow").on_tutorial_finished()
 	else:

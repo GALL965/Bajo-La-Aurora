@@ -3,49 +3,38 @@ class_name Leray
 
 signal hp_changed(hp: float, hp_max: float)
 signal died()
+var en_cinematica: bool = false
 
 var mirando_derecha: bool = true
 var en_ataque: bool = false
+var anim_forzada: String = ""
 
 @onready var golpe_shape: CollisionShape2D = $Golpe/Golpe
 @onready var sprite: AnimatedSprite2D = $Visual/Sprite
 
-# =========================
-# Referencias Componentes
-# =========================
+
 @onready var magic: MagicCaster = $Components/MagicCaster
 @onready var movement: PlayerMovement = $PlayerMovement
 @onready var vertical: VerticalPlayer = $Components/Vertical
 @onready var dash: Dash = $Components/Dash
 @onready var attack: Attack = $Components/Attack
 
-# =========================
-# Timers (ya existen en tu escena)
-# =========================
 @onready var dodge_timer: Timer = $Timers/DodgeTimer
 @onready var knockback_timer: Timer = $Timers/KnockbackTimer
 @onready var death_timer: Timer = $Timers/DeathTimer
 
-# =========================
-# COMBATE
-# =========================
+
 @export var hp_max: float = 100.0
 var hp: float = 100.0
 var invulnerable: bool = false
 var golpe_offset_x: float = 0.0
 
-# --- ESTADOS (animación) ---
 var en_damage: bool = false
 var en_dash: bool = false
 var en_salto: bool = false
 
-# =========================
-# Config daño / knockback
-# =========================
 @export var i_frames_time: float = 0.45
 
-# Knockback proporcional:
-# kb_mult = clamp(dmg / knockback_ref_dmg, knockback_min_mult, knockback_max_mult)
 @export var knockback_ref_dmg: float = 10.0
 @export var knockback_min_mult: float = 0.35
 @export var knockback_max_mult: float = 2.0
@@ -53,14 +42,9 @@ var en_salto: bool = false
 @export var knockback_duration: float = 0.12
 @export var knockback_friction: float = 2600.0 # suaviza el empuje
 
-# =========================
-# Config
-# =========================
 @export var gravedad_suelo: float = 0.0
 
-# =========================
-# Estado
-# =========================
+#
 var bloqueando_input: bool = false
 var _lock_damage: bool = false
 var _lock_knockback: bool = false
@@ -68,9 +52,6 @@ var _lock_knockback: bool = false
 var _en_knockback: bool = false
 var _knockback_vel_x: float = 0.0
 
-# =========================
-# Ciclo principal
-# =========================
 
 func _enter_tree() -> void:
 	add_to_group("jugador")
@@ -82,7 +63,6 @@ func _ready() -> void:
 
 	add_to_group("jugador")
 
-	# Fallback por si el .tscn te puso hp_max = null
 	if hp_max == null or float(hp_max) <= 0.0:
 		hp_max = 100.0
 
@@ -90,8 +70,6 @@ func _ready() -> void:
 	emit_signal("hp_changed", hp, hp_max)
 
 	if sprite:
-		# IMPORTANTE: "damage" debe NO ser loop, para que dispare animation_finished.
-		# Esto lo fuerza en runtime aunque el SpriteFrames esté mal configurado.
 		if sprite.sprite_frames and sprite.sprite_frames.has_animation("damage"):
 			sprite.sprite_frames.set_animation_loop("damage", false)
 
@@ -111,27 +89,22 @@ func _ready() -> void:
 			knockback_timer.timeout.connect(_on_knockback_timeout)
 
 func _physics_process(delta: float) -> void:
-	# Estados para animación
 	en_salto = vertical.is_en_el_aire()
 	en_dash = dash.esta_dasheando()
 	en_ataque = attack.is_attacking
 
 	_actualizar_animacion()
 
-	# 1) Dash (su lógica interna)
 	dash.process_dash(delta)
 
-	# 2) Movimiento base (si no ataca y si NO está bloqueado)
 	var move_velocity := Vector2.ZERO
 	if not bloqueando_input and not attack.is_attacking:
 		move_velocity = movement.update_movement(delta)
 
-	# 3) Dash sobreescribe X (solo si NO está bloqueado)
 	var dash_velocity := dash.get_velocity()
 	if not bloqueando_input and dash_velocity != Vector2.ZERO:
 		move_velocity.x = dash_velocity.x
 
-	# 4) Knockback (tiene prioridad sobre X)
 	if _en_knockback:
 		_knockback_vel_x = move_toward(_knockback_vel_x, 0.0, knockback_friction * delta)
 		move_velocity.x = _knockback_vel_x
@@ -141,21 +114,18 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# 5) Salto visual / eje Z falso
+	# Salto visual / eje Z falso
 	vertical.process_vertical(delta)
 
-	# 6) Ataque (timers / combo reset)
+	# taque (timers / combo reset)
 	attack.process_attack(delta)
 
-	# 7) Facing / ZIndex
+	# Facing / ZIndex
 	_update_facing()
 	z_index = int(global_position.y)
 
-# =========================
-# Input
-# =========================
 func _unhandled_input(event: InputEvent) -> void:
-	if bloqueando_input:
+	if bloqueando_input or en_cinematica:
 		return
 
 	dash.handle_input(event)
@@ -166,11 +136,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("jump"):
 		vertical.start_jump()
 
-# =========================
-# Facing
-# =========================
+
+
+#facing
 func _update_facing() -> void:
-	# Evita que se voltee durante knockback/damage
 	if bloqueando_input:
 		return
 
@@ -204,9 +173,8 @@ func _set_facing(derecha: bool) -> void:
 
 	golpe_shape.position.x = golpe_offset_x * sign
 
-# =========================
 # API para enemigos
-# =========================
+
 func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float = 220.0) -> void:
 	if invulnerable:
 		return
@@ -277,14 +245,12 @@ func esta_en_el_aire() -> bool:
 func get_altura_actual() -> float:
 	return vertical.get_altura()
 
-# =========================
-# Animaciones por prioridad
-# =========================
 func _actualizar_animacion() -> void:
-	# 1. DAMAGE: prioridad absoluta
-	if en_damage:
-		_play_if_not("damage")
+	if anim_forzada != "":
+		_play_if_not(anim_forzada)
 		return
+
+
 
 	if attack and attack.is_attacking:
 		return
@@ -293,12 +259,10 @@ func _actualizar_animacion() -> void:
 		_play_if_not("salto")
 		return
 
-	# 4. DASH
 	if en_dash:
 		_play_if_not("dash")
 		return
 
-	# 5. IDLE
 	_play_if_not("idle")
 
 func _play_if_not(anim: String) -> void:
@@ -326,19 +290,50 @@ func _on_golpe_conectado(_enemigo: Node) -> void:
 func _on_ataque_ejecutado() -> void:
 	$Audio/golpe.play()
 
-
-# =========================
-# API CONTROL EXTERNO
-# =========================
-
 func set_combat_enabled(enabled: bool) -> void:
 	if attack:
 		attack.set_process(enabled)
 		attack.set_physics_process(enabled)
 	
-	# Cancela ataque en curso si se bloquea
 	if not enabled:
 		en_ataque = false
 
 func set_input_enabled(enabled: bool) -> void:
 	bloqueando_input = not enabled
+
+func force_animation(anim: String) -> void:
+	en_cinematica = true
+	anim_forzada = anim
+
+	invulnerable = true
+	bloqueando_input = true
+
+	en_damage = false
+	en_ataque = false
+	_lock_damage = false
+	_lock_knockback = false
+	_en_knockback = false
+
+	if attack:
+		attack.cancel_attack()
+		attack.set_process(false)
+		attack.set_physics_process(false)
+
+	_refresh_input_lock()
+	_play_if_not(anim)
+
+
+
+func clear_forced_animation() -> void:
+	anim_forzada = ""
+
+func end_cinematic_state() -> void:
+	en_cinematica = false
+	anim_forzada = ""
+
+	invulnerable = false
+	bloqueando_input = false
+
+	if attack:
+		attack.set_process(true)
+		attack.set_physics_process(true)

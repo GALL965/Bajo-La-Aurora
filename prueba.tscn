@@ -3,9 +3,9 @@
 [ext_resource type="Texture2D" uid="uid://3ieiqkhrnpsa" path="res://fond.png" id="1_71jk5"]
 [ext_resource type="PackedScene" uid="uid://f84k6k4veyhm" path="res://scenes/player/Leray.tscn" id="2_mt5rx"]
 [ext_resource type="Script" uid="uid://xkxcnngy8a7o" path="res://scripts/Camera/BrawlerCamera.gd" id="3_rcdd3"]
-[ext_resource type="PackedScene" uid="uid://baut7kqf0ofcx" path="res://scenes/enemies/EnemigoBase.tscn" id="4_i5a71"]
 [ext_resource type="PackedScene" uid="uid://iclymlq53aj2" path="res://scenes/hud/HUD.tscn" id="5_i2p14"]
 [ext_resource type="PackedScene" uid="uid://diduya384mpvg" path="res://scenes/ui/PauseMenu.tscn" id="6_2tsr8"]
+[ext_resource type="PackedScene" uid="uid://bg2rse815eelc" path="res://scenes/enemies/Scout/Scout01.tscn" id="6_8bjpd"]
 
 [node name="Node2D" type="Node2D"]
 
@@ -25,19 +25,15 @@ target_path = NodePath("../Leray")
 [node name="Camera2D" type="Camera2D" parent="CameraRig"]
 scale = Vector2(0.99999994, 0.99999994)
 
-[node name="EnemigoBase" parent="." instance=ExtResource("4_i5a71")]
-position = Vector2(126, 447)
-attack_damage = 10.0
-
-[node name="EnemigoBase2" parent="." instance=ExtResource("4_i5a71")]
-position = Vector2(1554.9999, 820)
-attack_damage = 10.0
-
-[node name="EnemigoBase3" parent="." instance=ExtResource("4_i5a71")]
-position = Vector2(1147, 409)
-attack_damage = 10.0
-
 [node name="HUD" parent="." instance=ExtResource("5_i2p14")]
 hide_mana = false
 
 [node name="PauseMenu" parent="." instance=ExtResource("6_2tsr8")]
+
+[node name="EnemigoBase" parent="." instance=ExtResource("6_8bjpd")]
+
+[node name="EnemigoBase2" parent="." instance=ExtResource("6_8bjpd")]
+position = Vector2(1225.9999, 352.99997)
+
+[node name="EnemigoBase3" parent="." instance=ExtResource("6_8bjpd")]
+position = Vector2(-216.99998, 702.99994)

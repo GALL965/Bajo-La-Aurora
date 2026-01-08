@@ -19,7 +19,6 @@ func _start_dialog():
 	dialog_instance = dialog_scene.instantiate()
 	add_child(dialog_instance)
 	
-	# Llamada genérica: ajusta el nombre del método si el tuyo difiere
 	if dialog_instance.has_method("start_dialog"):
 		dialog_instance.start_dialog(dialog_json)
 	else:

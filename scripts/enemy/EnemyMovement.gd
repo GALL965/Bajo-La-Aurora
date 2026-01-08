@@ -712,7 +712,6 @@ func _recalcular_slot() -> void:
 
 	_slot_rank = clamp(rank, 0, max(0, slot_max_por_lado - 1))
 
-	# lane prefered se ajusta suave (para que no “salte”)
 	var desired_pref := float(_rank_lane_offset(_slot_rank)) * slot_spacing_y * 1.15
 	desired_pref += _rng.randf_range(-8.0, 8.0)
 	_lane_pref = lerp(_lane_pref, desired_pref, 0.35)

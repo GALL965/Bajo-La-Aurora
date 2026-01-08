@@ -5,7 +5,6 @@ class_name EnemyCombatDirector
 var attackers: Array = []
 
 func _cleanup() -> void:
-	# elimina referencias muertas
 	for i in range(attackers.size() - 1, -1, -1):
 		var e = attackers[i]
 		if e == null or (typeof(e) == TYPE_OBJECT and not is_instance_valid(e)):

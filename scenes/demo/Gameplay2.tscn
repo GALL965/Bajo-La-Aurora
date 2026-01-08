@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://hunst43uko40"]
+[gd_scene load_steps=20 format=3 uid="uid://hunst43uko40"]
 
 [ext_resource type="Script" uid="uid://d3q48nnedn1sh" path="res://scenes/demo/gameplay_2.gd" id="1_6u4ya"]
 [ext_resource type="Texture2D" uid="uid://blsg3w8pojhgr" path="res://assets/sprites/fondos/fond.png" id="1_fdnla"]
@@ -12,6 +12,10 @@
 [ext_resource type="PackedScene" uid="uid://diduya384mpvg" path="res://scenes/ui/PauseMenu.tscn" id="9_rld37"]
 [ext_resource type="PackedScene" uid="uid://d3o8r8engudqb" path="res://scenes/ui/DialogBox.tscn" id="11_qdjrh"]
 [ext_resource type="PackedScene" uid="uid://iclymlq53aj2" path="res://scenes/hud/HUD.tscn" id="12_tgtu1"]
+[ext_resource type="Texture2D" uid="uid://dg6x8wt60asgc" path="res://assets/sprites/ui/Bajo la aurora.png" id="13_q3bmj"]
+[ext_resource type="Texture2D" uid="uid://cmmxbu8tnf2v8" path="res://assets/sprites/obj/scene/Extraction.png" id="13_qbrlu"]
+[ext_resource type="Texture2D" uid="uid://cgiynohgc5dns" path="res://assets/sprites/ui/miz.png" id="14_1axmg"]
+[ext_resource type="Texture2D" uid="uid://dnhxx4bcnfhbq" path="res://assets/sprites/kells2.png" id="14_oefrg"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_rld37"]
 size = Vector2(1307, 48.5)
@@ -19,6 +23,17 @@ size = Vector2(1307, 48.5)
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_6u4ya"]
 radius = 43.5
 height = 425.01044
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_q3bmj"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_qbrlu")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
 
 [node name="Gameplay2" type="Node2D"]
 script = ExtResource("1_6u4ya")
@@ -89,10 +104,13 @@ centered = false
 [node name="Node2D" type="Node2D" parent="World/Parallax"]
 
 [node name="P0" type="Marker2D" parent="World/Parallax/Node2D"]
+position = Vector2(-433, 133)
 
 [node name="P1" type="Marker2D" parent="World/Parallax/Node2D"]
+position = Vector2(501, 163)
 
 [node name="P2" type="Marker2D" parent="World/Parallax/Node2D"]
+position = Vector2(137, 186)
 
 [node name="Enemies" type="Node2D" parent="World"]
 
@@ -128,14 +146,6 @@ shape = SubResource("CapsuleShape2D_6u4ya")
 
 [node name="Leray" parent="." instance=ExtResource("1_lrm4t")]
 position = Vector2(-164.99994, 129.99998)
-hp_max = 100.0
-i_frames_time = 0.45
-knockback_ref_dmg = 10.0
-knockback_min_mult = 0.35
-knockback_max_mult = 2.0
-knockback_duration = 0.12
-knockback_friction = 2600.0
-gravedad_suelo = 0.0
 
 [node name="BrawlerCamera" type="Node2D" parent="."]
 script = ExtResource("2_bwdth")
@@ -159,8 +169,6 @@ stream = ExtResource("8_sovgu")
 volume_db = 12.072
 autoplay = true
 
-[node name="PauseMenu" parent="." instance=ExtResource("9_rld37")]
-
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="DialogBox" parent="UI" instance=ExtResource("11_qdjrh")]
@@ -179,3 +187,47 @@ intro_fade_time = 0.35
 intro_blink_count = 2
 intro_fill_time = 0.45
 hide_mana = true
+
+[node name="Cutscene" type="CanvasLayer" parent="."]
+
+[node name="ExtractionShip" type="AnimatedSprite2D" parent="Cutscene"]
+position = Vector2(1139, -242)
+sprite_frames = SubResource("SpriteFrames_q3bmj")
+
+[node name="Fade" type="ColorRect" parent="Cutscene"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Titles" type="Node" parent="Cutscene"]
+
+[node name="Title1" type="TextureRect" parent="Cutscene/Titles"]
+visible = false
+offset_left = -36.0
+offset_top = -22.0
+offset_right = 1884.0
+offset_bottom = 1058.0
+scale = Vector2(0.64036226, 0.64036226)
+texture = ExtResource("13_q3bmj")
+
+[node name="Title2" type="TextureRect" parent="Cutscene/Titles"]
+visible = false
+offset_left = -765.0
+offset_top = -216.0
+offset_right = 1155.0
+offset_bottom = 864.0
+texture = ExtResource("14_1axmg")
+
+[node name="Title3" type="TextureRect" parent="Cutscene/Titles"]
+visible = false
+offset_left = 231.0
+offset_top = -14.0000305
+offset_right = 1255.0
+offset_bottom = 1010.0
+scale = Vector2(0.61567223, 0.65622336)
+texture = ExtResource("14_oefrg")
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_rld37")]

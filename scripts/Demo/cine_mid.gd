@@ -4,8 +4,11 @@ extends Node2D
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
-	video.finished.connect(_on_video_finished)
+
+	video.loop = false
 	video.play()
 
-func _on_video_finished() -> void:
-	Demoflow.on_cine2_finished()
+	await video.finished
+
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	await Demoflow.goto_scene("res://scenes/demo/Gameplay2.tscn")

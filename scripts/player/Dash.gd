@@ -22,9 +22,6 @@ var _usado_en_el_aire: bool = false
 @onready var components: Node = get_parent()
 @onready var vertical: VerticalPlayer = components.get_node_or_null("Vertical")
 
-# =========================
-# Input
-# =========================
 func handle_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.echo:
 		return
@@ -47,9 +44,7 @@ func _process_tap(dir: int) -> void:
 			_try_start(1)
 		_last_right_time = now
 
-# =========================
-# Dash core
-# =========================
+
 func _try_start(dir: int) -> void:
 	if _cooldown_left > 0.0:
 		return
@@ -75,13 +70,11 @@ func _try_start(dir: int) -> void:
 	emit_signal("dash_started")
 
 func process_dash(delta: float) -> void:
-	# cooldown
 	if _cooldown_left > 0.0:
 		_cooldown_left -= delta
 		if _cooldown_left < 0.0:
 			_cooldown_left = 0.0
 
-	# reset dash aéreo al tocar suelo
 	if vertical and not vertical.is_en_el_aire():
 		_usado_en_el_aire = false
 
@@ -102,9 +95,7 @@ func _stop() -> void:
 
 	emit_signal("dash_finished")
 
-# =========================
-# API para el jugador
-# =========================
+#api pal jugador
 func get_velocity() -> Vector2:
 	if not is_dashing:
 		return Vector2.ZERO

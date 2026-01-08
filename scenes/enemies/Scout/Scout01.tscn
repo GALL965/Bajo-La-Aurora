@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://bg2rse815eelc"]
+
+[ext_resource type="PackedScene" uid="uid://baut7kqf0ofcx" path="res://scenes/enemies/EnemigoBase.tscn" id="1_t4l55"]
+
+[node name="EnemigoBase" instance=ExtResource("1_t4l55")]
+prob_salto_amenaza = 0.25
+
+[node name="Sprite" parent="Visual" index="0"]
+animation = &"death"
+
+[node name="Health" parent="." index="9"]
+hp_max = 50.0

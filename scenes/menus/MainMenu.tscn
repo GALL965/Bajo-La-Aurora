@@ -1,9 +1,10 @@
-[gd_scene load_steps=10 format=3 uid="uid://b58wfgjgblbwg"]
+[gd_scene load_steps=11 format=3 uid="uid://b58wfgjgblbwg"]
 
 [ext_resource type="Theme" uid="uid://dp5ckefnqmemk" path="res://assets/themes/ui_theme.tres" id="1_ldf1p"]
 [ext_resource type="Script" uid="uid://dmm5qyxyualh7" path="res://scripts/ui/MainMenu.gd" id="1_wlpbi"]
 [ext_resource type="VideoStream" uid="uid://dn4v3peevauvq" path="res://assets/video/fondo.ogv" id="2_bqojv"]
 [ext_resource type="AudioStream" uid="uid://b7kx3qex2psm2" path="res://assets/audio/ui/hover.mp3" id="4_tyyoy"]
+[ext_resource type="AudioStream" uid="uid://cytjljmu03w0d" path="res://assets/audio/music/Dream Nebula.mp3" id="5_p0il0"]
 
 [sub_resource type="Animation" id="Animation_bqojv"]
 length = 0.001
@@ -192,7 +193,7 @@ mouse_filter = 2
 
 [node name="NewGameBtn" type="Button" parent="VBoxContainer"]
 layout_mode = 2
-text = ">Nueva Partida"
+text = ">Jugar demo"
 alignment = 0
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="VBoxContainer/NewGameBtn"]
@@ -232,7 +233,5 @@ color = Color(0, 0, 0, 1)
 environment = SubResource("Environment_ldf1p")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_p0il0")
 autoplay = true
-
-[connection signal="pressed" from="VBoxContainer/NewGameBtn" to="." method="_on_new_game_pressed"]
-[connection signal="pressed" from="VBoxContainer/ExitBtn" to="." method="_on_exit_pressed"]

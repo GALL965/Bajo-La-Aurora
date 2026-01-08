@@ -229,25 +229,19 @@ func _build_spellbook() -> void:
 	Callable(self, "_spell_magic_beam")
 )
 
-	# Ejemplos (orden importa)
-	# ASDW -> ataque (proyectil/escena)
 	_spells["WASD"] = SpellDef.new("arc_bolt", 25.0, Callable(self, "_spell_arc_bolt"))
 
 	# WDAS -> convertir mana en vida
 	_spells["WDAS"] = SpellDef.new("mana_to_hp", 15.0, Callable(self, "_spell_mana_to_hp"))
 
-# =========================
-# SPELLS (ejemplos)
-# =========================
+
 func _spell_arc_bolt() -> void:
 	if arc_bolt_scene == null:
-		# No truena: solo no hace nada hasta que le asignas una escena
 		return
 
 	var inst := arc_bolt_scene.instantiate()
 	get_tree().current_scene.add_child(inst)
 
-	# Spawn enfrente del jugador
 	var dir := Vector2.RIGHT
 	if _player and "mirando_derecha" in _player and not _player.mirando_derecha:
 		dir = Vector2.LEFT
@@ -260,7 +254,6 @@ func _spell_arc_bolt() -> void:
 func _spell_mana_to_hp() -> void:
 	if _player == null:
 		return
-	# requiere que Leray tenga hp y hp_max (ya los tienes)
 	if not ("hp" in _player and "hp_max" in _player):
 		return
 

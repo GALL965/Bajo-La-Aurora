@@ -81,9 +81,7 @@ func process_vertical(delta: float) -> void:
 	if not en_el_aire:
 		return
 	
-	# Si estás en el aire y dashes, quédate "flotando" mientras dure el dash
 	if dash_activo and suspender_caida_en_dash_aereo:
-		# solo suspende gravedad, NO mates el rebote
 		_apply_visuals()
 		return
 
@@ -111,7 +109,6 @@ func process_vertical(delta: float) -> void:
 	_apply_visuals()
 
 func _apply_visuals() -> void:
-	# Altura total (por si algún día usas altura_base)
 	var h := altura_base + altura
 
 	visual.position = _base_visual_pos + Vector2(0, -h)
@@ -146,15 +143,12 @@ func is_en_el_aire() -> bool:
 func _on_dash_started() -> void:
 	dash_activo = true
 
-	# ❌ apagar colisión física COMPLETA con unidades
 	if atravesar_unidades_en_dash and _body_shape:
 		_body_shape.disabled = true
 
-	# i-frames (hurtbox)
 	if invulnerable_en_dash and _hurtbox_shape:
 		_hurtbox_shape.disabled = true
 
-	# Suspender caída en dash aéreo
 	if en_el_aire and suspender_caida_en_dash_aereo:
 		velocidad_salto = 0.0
 
@@ -167,7 +161,6 @@ func _on_dash_finished() -> void:
 	if atravesar_unidades_en_dash and _body_shape:
 		_body_shape.disabled = false
 
-	# quitar i-frames
 	if invulnerable_en_dash and _hurtbox_shape:
 		_hurtbox_shape.disabled = false
 

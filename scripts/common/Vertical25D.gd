@@ -8,12 +8,10 @@ class_name Vertical25D
 @export var fuerza_salto: float = 800.0
 @export var max_altura: float = 650.0
 
-# Para voladores
 @export var volador: bool = false
 @export var altura_base: float = 0.0
 @export var fly_lerp: float = 6.0
 
-# Look sombra
 @export var sombra_scale_min: float = 0.55
 @export var sombra_alpha_min: float = 0.35
 

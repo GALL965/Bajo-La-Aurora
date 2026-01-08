@@ -29,7 +29,6 @@ func _on_body_entered(body: Node) -> void:
 	if body == null or not body.is_in_group("jugador"):
 		return
 
-	# Si ya lo tengo, no re-disparar agro (evita reset de grace)
 	if jugador == body:
 		return
 

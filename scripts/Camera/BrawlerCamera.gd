@@ -37,9 +37,6 @@ func _process(delta: float) -> void:
 	var cam_pos: Vector2 = global_position
 	var diff: Vector2 = target_pos - cam_pos
 
-	# =========================
-	# Dead zone X
-	# =========================
 	var half_x := deadzone_width * 0.5
 
 	if diff.x > half_x:
@@ -47,17 +44,11 @@ func _process(delta: float) -> void:
 	elif diff.x < -half_x:
 		_desired_position.x = target_pos.x + half_x
 
-	# =========================
-	# Dead zone Y
-	# =========================
 	if diff.y < -deadzone_up:
 		_desired_position.y = target_pos.y + deadzone_up
 	elif diff.y > deadzone_down:
 		_desired_position.y = target_pos.y - deadzone_down
 
-	# =========================
-	# Movimiento suave
-	# =========================
 	global_position = global_position.lerp(
 		_desired_position,
 		follow_speed * delta

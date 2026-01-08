@@ -9,7 +9,6 @@ func _ready() -> void:
 	layer = 1000
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Estado inicial: transparente
 	fade.color.a = 0.0
 
 

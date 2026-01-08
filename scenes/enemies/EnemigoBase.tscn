@@ -65,6 +65,17 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": ExtResource("6_uhel1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_uhel1")
+}],
+"loop": false,
+"name": &"despl",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_gmalk")
 }, {
 "duration": 1.0,
@@ -138,7 +149,7 @@ scale = Vector2(1.3045433, 1.3045433)
 position = Vector2(-3.4175432, -41.8649)
 scale = Vector2(0.26231822, 0.26231822)
 sprite_frames = SubResource("SpriteFrames_rdiwc")
-animation = &"idle"
+animation = &"despl"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(5.594047, 5.594047)

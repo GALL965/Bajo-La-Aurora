@@ -20,7 +20,7 @@ func _ready():
 func _play_step():
 	if step < SEQUENCE.size():
 		logo.visible = true
-		logo.modulate = Color(1, 1, 1, 0) # empieza invisible
+		logo.modulate = Color(1, 1, 1, 0) # empiezar invisible
 		logo.texture = load(SEQUENCE[step])
 		anim.play("fade_in_out")
 	else:

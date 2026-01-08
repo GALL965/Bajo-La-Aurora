@@ -242,8 +242,6 @@ func _fin_ataque() -> void:
 	if mv and mv.has_method("desactivar_lock_melee"):
 		mv.call("desactivar_lock_melee")
 
-
-
 func resolver_golpe() -> void:
 	if area_hit == null:
 		return

@@ -1,9 +1,7 @@
 extends CanvasLayer
 class_name PauseMenu
 
-# =========================
 # NODOS
-# =========================
 @onready var root: Control = $Root
 @onready var buttons_panel: Control = $Root/Panel
 @onready var pause_label: Label = $Pausa
@@ -11,17 +9,12 @@ class_name PauseMenu
 @onready var resume_btn: Button = $Root/Panel/VBoxContainer/ResumeBtn
 @onready var quit_btn: Button = $Root/Panel/VBoxContainer/QuitBtn
 
-# =========================
 # ESTADO
-# =========================
 var _panel_final_x: float
 var _label_final_x: float
 var _tween: Tween
 var _prev_mouse_mode: int = Input.MOUSE_MODE_VISIBLE
 
-# =========================
-# READY
-# =========================
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	root.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -39,17 +32,13 @@ func _ready() -> void:
 	resume_btn.pressed.connect(_on_resume_pressed)
 	quit_btn.pressed.connect(_on_quit_pressed)
 
-# =========================
 # INPUT
-# =========================
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		toggle_pause()
 		get_viewport().set_input_as_handled()
 
-# =========================
 # PAUSA
-# =========================
 func toggle_pause() -> void:
 	if get_tree().paused:
 		_resume()
@@ -72,9 +61,7 @@ func _resume() -> void:
 		Input.mouse_mode = _prev_mouse_mode
 	)
 
-# =========================
 # BOTONES
-# =========================
 func _on_resume_pressed() -> void:
 	_resume()
 
@@ -84,9 +71,7 @@ func _on_quit_pressed() -> void:
 		get_tree().quit()
 	)
 
-# =========================
-# ANIMACIONES
-# =========================
+# ANIMACIONES MIAU MIAU
 func _animate_in() -> void:
 	if _tween:
 		_tween.kill()

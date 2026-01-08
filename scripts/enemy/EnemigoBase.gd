@@ -3,8 +3,8 @@ class_name EnemigoBase
 
 
 enum VerticalMode { SUELO, VOLANDO }
-@export var prob_salto_amenaza: float = 0.015      # por segundo aprox (lo modulamos)
-@export var prob_salto_espejo: float = 0.35        # chance de saltar cuando el jugador salta
+@export var prob_salto_amenaza: float = 0.015    
+@export var prob_salto_espejo: float = 0.35    
 @export var aire_altura_min_para_reaccion: float = 40.0
 @export var aire_rango_x_para_reaccion: float = 140.0
 @export var salto_cooldown: float = 1.2
@@ -46,7 +46,6 @@ var _det_base_x: float = 0.0
 @export var attack_damage: float = 10.0
 @export var ataque_delay: float = 0.5
 
-# “altura” estilo beat em up
 @export var fuerza_salto: float = 800.0
 @export var gravedad: float = -1600.0
 
@@ -59,7 +58,6 @@ var en_el_aire: bool = false
 var altura: float = 0.0
 var velocidad_salto: float = 0.0
 
-# Knockback (solo X)
 var kb_vel_x: float = 0.0
 var kb_time_left: float = 0.0
 @export var kb_decay: float = 2200.0
@@ -85,7 +83,7 @@ func _ready() -> void:
 
 	_base_visual_pos = visual.position
 	_visual_base_scale = visual.scale
-	_visual_base_scale.x = abs(_visual_base_scale.x) # aseguramos base positiva
+	_visual_base_scale.x = abs(_visual_base_scale.x)
 
 
 	var cand = get_tree().get_nodes_in_group("jugador")
@@ -93,13 +91,11 @@ func _ready() -> void:
 		jugador = cand[0]
 		
 	
-	# Reacción al salto del jugador (si existe el componente Vertical)
 	if jugador:
 		var v = jugador.get_node_or_null("Components/Vertical")
 		if v and v.has_signal("jumped"):
 			v.jumped.connect(_on_player_jumped)
 
-	
 
 	senses.setup(self, jugador)
 	move.setup(self, jugador)
@@ -172,14 +168,12 @@ func _physics_process(delta: float) -> void:
 
 	velocity = v
 	
-	# Deadzone mínima para evitar vibraciones
 	if velocity.length() < 8.0:
 		velocity = Vector2.ZERO
 
 	
 	if jugador and jugador.has_method("esta_en_el_aire") and bool(jugador.call("esta_en_el_aire")):
-		# Quita la capa del jugador de tu máscara (AJUSTA ESTE BIT)
-		const LAYER_PLAYER := 1 << 1  # si tu Player está en layer 2
+		const LAYER_PLAYER := 1 << 1  
 		collision_mask = _mask_base & ~LAYER_PLAYER
 	else:
 		collision_mask = _mask_base
@@ -194,7 +188,6 @@ func _physics_process(delta: float) -> void:
 	z_index = int(global_position.y)
 
 func _process_vertical(delta: float) -> void:
-	# Modo volando: altura fija (con bob opcional) y sin gravedad
 	if vertical_mode == VerticalMode.VOLANDO:
 		en_el_aire = true
 		velocidad_salto = 0.0
@@ -250,10 +243,6 @@ func _update_anim(v: Vector2) -> void:
 	if det_shape:
 		_det_base_x = abs(det_shape.position.x)
 
-
-
-
-# --- API para el jugador ---
 func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float = 260.0) -> void:
 	if health:
 		health.recibir_dano(cantidad, atacante, knockback_poder)
@@ -282,7 +271,6 @@ func get_attack_damage() -> float:
 func get_velocidad_max() -> float:
 	return velocidad_max
 
-# --- Señales internas ---
 func _on_jugador_detectado(p: Node2D) -> void:
 	if jugador == p and jugador != null:
 		return
@@ -297,16 +285,14 @@ func _on_jugador_detectado(p: Node2D) -> void:
 	if combat:
 		combat.jugador = jugador
 
-	# Solo al primer detectado real
 	combat.procesar_jugador_detectado()
-
-
-
 
 
 func _on_solicitar_animacion(nombre: String) -> void:
 	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation(nombre):
+		animacion_en_curso = true
 		sprite.play(nombre)
+
 
 func _on_tomar_dano(_cantidad: float, atacante: Node, knockback_poder: float) -> void:
 	if audio_dano:
@@ -331,11 +317,24 @@ func _on_sprite_anim_finished() -> void:
 	if sprite == null:
 		return
 
-	if sprite.animation == "damage":
-		en_anim_damage = false
-		animacion_en_curso = false
-		if health.esta_vivo() and sprite.sprite_frames.has_animation("idle"):
-			sprite.play("idle")
+	match sprite.animation:
+		"damage":
+			en_anim_damage = false
+			animacion_en_curso = false
+			if health.esta_vivo():
+				_play_idle_safe()
+
+		"attack":
+			animacion_en_curso = false
+			if health.esta_vivo():
+				_play_idle_safe()
+
+		"despl":
+			animacion_en_curso = false
+			if health.esta_vivo():
+				_play_idle_safe()
+
+
 
 func _on_murio() -> void:
 	set_physics_process(false)
@@ -475,3 +474,18 @@ func puede_atacar() -> bool:
 func _exit_tree() -> void:
 	if Engine.has_singleton("CombatDirector"):
 		CombatDirector.release_attack(self)
+
+func _play_idle_safe() -> void:
+	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation("idle"):
+		sprite.play("idle")
+
+func play_spawn_animation() -> void:
+	if sprite == null:
+		return
+	if not sprite.sprite_frames:
+		return
+	if not sprite.sprite_frames.has_animation("despl"):
+		return
+
+	animacion_en_curso = true
+	sprite.play("despl")

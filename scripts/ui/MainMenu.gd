@@ -2,6 +2,7 @@ extends Control
 
 @onready var anim: AnimationPlayer = $AnimationPlayer
 @onready var fade: ColorRect = $Fade
+@onready var music: AudioStreamPlayer = $AudioStreamPlayer
 
 @onready var new_game_btn: Button = $VBoxContainer/NewGameBtn
 @onready var continue_btn: Button = $VBoxContainer/ContinueBtn
@@ -11,15 +12,19 @@ extends Control
 var _input_locked := false
 
 func _ready():
-	# Fade in del menú
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+
 	fade.color.a = 1.0
 	anim.play("fade_in")
 
-	# Conectar botones
 	_setup_button(new_game_btn, _on_new_game_pressed)
 	_setup_button(continue_btn, _on_continue_pressed)
 	_setup_button(options_btn, _on_options_pressed)
 	_setup_button(exit_btn, _on_exit_pressed)
+
 
 
 func _setup_button(btn: Button, callback: Callable) -> void:
@@ -43,22 +48,29 @@ func _setup_button(btn: Button, callback: Callable) -> void:
 
 	btn.pressed.connect(callback)
 
-
-
-
-# =========================
-# CALLBACKS DE BOTONES
-# =========================
-
 func _on_new_game_pressed() -> void:
 	if _input_locked:
 		return
 
 	_input_locked = true
-	anim.play("fade_out")
-	await anim.animation_finished
 
-	SceneLoader.goto_scene("res://scenes/boot/Boot.tscn")
+	if music.playing:
+		music.stop()
+
+	fade.visible = true
+
+	if anim.has_animation("fade_out"):
+		anim.play("fade_out")
+		await anim.animation_finished
+	elif anim.has_animation("fade_in"):
+		anim.play_backwards("fade_in")
+		await anim.animation_finished
+
+	SceneLoader.goto_scene("res://scenes/demo/CineIntro.tscn")
+
+
+
+
 
 
 func _on_continue_pressed() -> void:
