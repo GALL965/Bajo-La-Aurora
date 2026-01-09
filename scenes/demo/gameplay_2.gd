@@ -5,6 +5,7 @@ var _gameplay_time := 0.0
 var _final_started := false
 var _extraction_started := false
 var _titles_started := false
+@onready var fx_layer: Node2D = $World/FXLayer
 
 var _timeline_running := false
 
@@ -48,6 +49,7 @@ const DEFAULT_ENEMY := preload("res://scenes/enemies/Scout/Scout01.tscn")
 
 @onready var enemies_root: Node2D = $World/Enemies
 @onready var spawns_root: Node2D = $World/Parallax/Node2D
+#@onready var damage_numbers: DamageNumberPool = $World/FX
 
 var _rng := RandomNumberGenerator.new()
 var _spawn_enabled := false
@@ -73,6 +75,8 @@ var _spawn_points: Array[Marker2D] = []
 # CICLO PRINCIPAL
 # =========================
 func _ready() -> void:
+	#damage_numbers.set_fx_parent($FX)
+
 	_rng.randomize()
 	_setup_enemy_spawner()
 
@@ -349,11 +353,17 @@ func _on_spawn_timer_timeout() -> void:
 
 
 func _schedule_next_spawn(delay: float) -> void:
+	if not is_inside_tree():
+		return
 	if not spawn_timer:
 		return
+	if not spawn_timer.is_inside_tree():
+		return
+
 	spawn_timer.stop()
 	spawn_timer.wait_time = max(0.05, delay)
 	spawn_timer.start()
+
 
 
 # =========================

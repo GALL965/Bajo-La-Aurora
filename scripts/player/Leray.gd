@@ -182,15 +182,26 @@ func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float
 		return
 
 	# 1) Baja HP
+
+	HitfxPool.play_fx(global_position + Vector2(0, -30))
+	DamagenumberPool.play_damage(cantidad, global_position + Vector2(0, -60))
+
+
 	hp = max(hp - cantidad, 0.0)
+
 	emit_signal("hp_changed", hp, hp_max)
 
 	# 2) Entra a estado DAMAGE + lock input
 	en_damage = true
 	_lock_damage = true
 	_refresh_input_lock()
+
+	if attack:
+		attack.cancel_attack()
+
 	$Audio/dano.play()
 	_play_if_not("damage")
+
 
 	invulnerable = true
 	if dodge_timer:
@@ -200,6 +211,12 @@ func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float
 
 	if hp <= 0.0:
 		emit_signal("died")
+
+#funcion para mostrar salud cuando se implemente
+#DamageNumberPool.play_heal(cantidad, global_position + Vector2(0, -60))
+
+
+
 
 func _aplicar_knockback(dmg: float, atacante: Node, knockback_poder: float) -> void:
 	var dir_x := 0.0
@@ -250,7 +267,10 @@ func _actualizar_animacion() -> void:
 		_play_if_not(anim_forzada)
 		return
 
-
+	# PRIORIDAD: daño primero (si no, se pisa y nunca termina)
+	if en_damage:
+		_play_if_not("damage")
+		return
 
 	if attack and attack.is_attacking:
 		return
@@ -264,6 +284,7 @@ func _actualizar_animacion() -> void:
 		return
 
 	_play_if_not("idle")
+
 
 func _play_if_not(anim: String) -> void:
 	if sprite.animation != anim:
@@ -337,3 +358,13 @@ func end_cinematic_state() -> void:
 	if attack:
 		attack.set_process(true)
 		attack.set_physics_process(true)
+
+
+
+func mostrar_hit_fx() -> void:
+	var fx_scene := preload("res://scenes/fx/HitEffect.tscn")
+	var fx := fx_scene.instantiate()
+
+	get_parent().add_child(fx)
+	fx.global_position = global_position + Vector2(0, -30)
+	fx.rotation = randf_range(-0.2, 0.2)

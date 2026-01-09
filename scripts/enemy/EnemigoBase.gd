@@ -1,7 +1,6 @@
 extends CharacterBody2D
 class_name EnemigoBase
 
-
 enum VerticalMode { SUELO, VOLANDO }
 @export var prob_salto_amenaza: float = 0.015    
 @export var prob_salto_espejo: float = 0.35    
@@ -294,7 +293,14 @@ func _on_solicitar_animacion(nombre: String) -> void:
 		sprite.play(nombre)
 
 
-func _on_tomar_dano(_cantidad: float, atacante: Node, knockback_poder: float) -> void:
+func _on_tomar_dano(cantidad: float, atacante: Node, knockback_poder: float) -> void:
+	HitfxPool.play_fx(global_position + Vector2(0, -30))
+
+	DamagenumberPool.play_damage(cantidad, global_position + Vector2(0, -60))
+
+
+
+
 	if audio_dano:
 		audio_dano.play()
 
@@ -304,14 +310,12 @@ func _on_tomar_dano(_cantidad: float, atacante: Node, knockback_poder: float) ->
 	if sprite and sprite.sprite_frames.has_animation("damage"):
 		sprite.play("damage")
 
-	# knockback desde el atacante
-	var dir = 0.0
+	var dir := 0.0
 	if atacante and atacante is Node2D:
-		if atacante.global_position.x < global_position.x:
-			dir = 1.0
-		else:
-			dir = -1.0
+		dir = 1.0 if atacante.global_position.x < global_position.x else -1.0
+
 	_start_knockback(dir, knockback_poder, 0.18)
+
 
 func _on_sprite_anim_finished() -> void:
 	if sprite == null:
@@ -489,3 +493,12 @@ func play_spawn_animation() -> void:
 
 	animacion_en_curso = true
 	sprite.play("despl")
+
+
+func mostrar_hit_fx() -> void:
+	var fx_scene := preload("res://scenes/fx/HitEffect.tscn")
+	var fx := fx_scene.instantiate()
+
+	get_parent().add_child(fx)
+	fx.global_position = global_position + Vector2(0, -30)
+	fx.rotation = randf_range(-0.2, 0.2)

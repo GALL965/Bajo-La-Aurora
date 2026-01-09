@@ -175,6 +175,7 @@ func _apply_hit(body: Node) -> void:
 	if dy > banda:
 		return
 
+	# Validación por altura
 	if not _modo_rebote_aereo:
 		if not _altura_compatible(owner_char, body):
 			return
@@ -188,28 +189,34 @@ func _apply_hit(body: Node) -> void:
 	_hit_ids[id] = true
 	emit_signal("golpe_conectado", body)
 
+	# Daño
+	HitfxPool.play_fx(body.global_position + Vector2(0, -30))
+
+
 	var final_damage := damage
-	if _modo_rebote_aereo:
-		final_damage *= 1.10
-
-
 	if _modo_rebote_aereo:
 		final_damage *= 1.10
 
 	if body.has_method("recibir_dano"):
 		body.call("recibir_dano", final_damage, owner_char)
+		DamagenumberPool.play_damage(final_damage, body.global_position + Vector2(0, -60))
 
+
+	# Knockback al enemigo (SIEMPRE que lo soporte)
 	if body.has_method("apply_knockback"):
 		var dir := 1
 		if body.global_position.x < owner_char.global_position.x:
 			dir = -1
 		body.call("apply_knockback", Vector2(dir * knockback_fuerza, 0.0))
 
-		if vertical and vertical.has_method("bounce"):
-			vertical.call("bounce", rebote_impulso)
+	# Rebote del jugador SOLO si es ataque aéreo válido
+	if _modo_rebote_aereo and vertical and vertical.has_method("bounce"):
+		vertical.call("bounce", rebote_impulso)
 
-		if levantar_enemigo_en_rebote > 0.0:
-			_try_knock_up(body, levantar_enemigo_en_rebote)
+	# Levantar enemigo SOLO en rebote aéreo
+	if _modo_rebote_aereo and levantar_enemigo_en_rebote > 0.0:
+		_try_knock_up(body, levantar_enemigo_en_rebote)
+
 
 func _try_knock_up(target: Node, power: float) -> void:
 	if target == null:
@@ -320,4 +327,4 @@ func cancel_attack() -> void:
 	_attack_token += 1
 
 	if hitbox_shape:
-		hitbox_shape.disabled = true
+		hitbox_shape.set_deferred("disabled", true)

@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Bajo la Aurora"
-run/main_scene="uid://hunst43uko40"
+run/main_scene="uid://cgwfbqmclbogl"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/bg_color=Color(0, 0, 0, 1)
 boot_splash/show_image=false
@@ -23,6 +23,8 @@ Fade="*res://scenes/ui/FadeTransition.tscn"
 SceneLoader="*res://scripts/systems/SceneLoader.gd"
 CombatDirector="*res://scripts/enemy/EnemyCombatDirector.gd"
 Demoflow="*res://scripts/core/DemoFlow.gd"
+HitfxPool="*res://scripts/systems/HitFxPool.gd"
+DamagenumberPool="*res://scripts/fx/DamageNumberPool.gd"
 
 [display]
 
