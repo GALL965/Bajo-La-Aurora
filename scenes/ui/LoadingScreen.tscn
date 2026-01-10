@@ -150,23 +150,16 @@ _data = {
 &"fade_out": SubResource("Animation_n2vsc")
 }
 
-[node name="LoadingScreen" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="LoadingScreen" type="CanvasLayer"]
+layer = 9999
 script = ExtResource("1_uo7ie")
 
 [node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 0
 offset_right = 1558.0
 offset_bottom = 987.0
 color = Color(0, 0, 0, 1)
 
 [node name="TipLabel" type="Label" parent="."]
-layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -186,7 +179,6 @@ position = Vector2(25, 245)
 scale = Vector2(2.0433707, 2.0433707)
 
 [node name="LoadingLabel" type="Label" parent="."]
-layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -202,20 +194,18 @@ text = "<Cargando> "
 horizontal_alignment = 1
 
 [node name="ProgressBar" type="ProgressBar" parent="."]
-layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -576.0
+offset_left = -813.0
 offset_top = -27.0
-offset_right = 576.0
+offset_right = 726.0
 grow_horizontal = 2
 grow_vertical = 0
 
 [node name="Fade" type="ColorRect" parent="."]
-layout_mode = 0
 offset_right = 1715.0
 offset_bottom = 1121.0
 mouse_filter = 2

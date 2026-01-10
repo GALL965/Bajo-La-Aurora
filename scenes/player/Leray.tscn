@@ -1,4 +1,4 @@
-[gd_scene load_steps=70 format=3 uid="uid://f84k6k4veyhm"]
+[gd_scene load_steps=71 format=3 uid="uid://f84k6k4veyhm"]
 
 [ext_resource type="Script" uid="uid://dkxaggqwr32ke" path="res://scripts/player/Leray.gd" id="1_cvesf"]
 [ext_resource type="Texture2D" uid="uid://c35e12haqrqys" path="res://assets/sprites/characters/Leray/AD1.png" id="2_2esev"]
@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://c0drja6glon4g" path="res://assets/sprites/characters/Leray/golpe3.png" id="4_6k11w"]
 [ext_resource type="Script" uid="uid://cys06bsb7u7ni" path="res://scripts/player/Attack.gd" id="5_1qgct"]
 [ext_resource type="Texture2D" uid="uid://dfrb4cy4n3nv" path="res://assets/sprites/characters/Leray/golpe4.png" id="5_ef0j0"]
+[ext_resource type="Texture2D" uid="uid://dq8effl14acl4" path="res://assets/sprites/characters/Leray/esq.png" id="5_vp1cn"]
 [ext_resource type="Texture2D" uid="uid://b5wbsh5hq5k2j" path="res://assets/sprites/characters/Leray/Lsalt1.png" id="7_mvq1n"]
 [ext_resource type="Texture2D" uid="uid://btv2u8k67hxr3" path="res://assets/sprites/characters/Leray/Lsalt3.png" id="8_55423"]
 [ext_resource type="Texture2D" uid="uid://bif6ga2i4us0m" path="res://assets/sprites/characters/Leray/idle.png" id="9_sdlyj"]
@@ -234,6 +235,14 @@ animations = [{
 "loop": true,
 "name": &"dash",
 "speed": 30.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_vp1cn")
+}],
+"loop": true,
+"name": &"death",
+"speed": 5.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -495,7 +504,7 @@ scale = Vector2(0.43329108, 0.43329108)
 
 [node name="Sprite" type="AnimatedSprite2D" parent="Visual"]
 sprite_frames = SubResource("SpriteFrames_2esev")
-animation = &"idle"
+animation = &"death"
 
 [node name="Golpe" type="Area2D" parent="."]
 collision_layer = 0

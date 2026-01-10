@@ -8,6 +8,7 @@ extends CanvasLayer
 @export var anim_fast_time := 0.12
 @export var anim_settle_time := 0.10
 @export var overshoot := 0.04  # 4% de rebote
+const LOG := "[HUD]"
 
 @export var anim_duration: float = 0.25
 @export var intro_fade_time := 0.35
@@ -37,11 +38,23 @@ var mp_ratio_visual: float = 1.0
 var hp_tween: Tween
 var mp_tween: Tween
 
+func set_player(p: Node) -> void:
+	print(LOG, " set_player called with:", p)
+	jugador = p
+
 
 # =========================
 # Init
 # =========================
 func _ready() -> void:
+	print(LOG, " layer:", layer)
+
+	print(LOG, " READY")
+	print(LOG, " visible:", visible)
+	print(LOG, " root:", root)
+	print(LOG, " hp_fill:", hp_fill)
+	print(LOG, " mp_fill:", mp_fill)
+
 	if not hp_fill:
 		push_error("HUD: hp_fill no asignado")
 		return
@@ -56,7 +69,7 @@ func _ready() -> void:
 		mp_bar.visible = false
 
 	# HUD inicia invisible (intro manual)
-	visible = false
+	#visible = false
 	root.modulate.a = 0.0
 
 	# Barras inician vacías visualmente
@@ -68,15 +81,22 @@ func _ready() -> void:
 		mp_fill.scale.x = 0.001
 
 	# Cache jugador
-	var jugadores = get_tree().get_nodes_in_group("jugador")
-	if jugadores.size() > 0:
-		jugador = jugadores[0]
+	jugador = null
+	_resolve_player()
+	# Al final de _ready:
+	if not jugador:
+		var jugadores = get_tree().get_nodes_in_group("jugador")
+		if jugadores.size() > 0:
+			jugador = jugadores[0]
+
 
 
 # =========================
 # Loop
 # =========================
 func _process(_delta: float) -> void:
+	_resolve_player()
+
 	if not jugador:
 		return
 
@@ -172,8 +192,30 @@ func _animar_mp() -> void:
 
 
 func play_intro() -> void:
+	print(LOG, " play_intro START")
+	print(LOG, " initial visible:", visible)
+
+	visible = true
+	print(LOG, " forced visible = true")
+
+	await get_tree().process_frame
+	print(LOG, " AFTER first frame, visible:", visible)
+
 	if not jugador:
-		return
+		for i in range(2):
+			await get_tree().process_frame
+			var jugadores = get_tree().get_nodes_in_group("jugador")
+			if jugadores.size() > 0:
+				jugador = jugadores[0]
+				break
+	visible = true
+	
+	var guard := 0
+	while (jugador == null or not is_instance_valid(jugador)) and guard < 120:
+		_resolve_player()
+		guard += 1
+		await get_tree().process_frame
+
 
 	visible = true
 
@@ -203,3 +245,8 @@ func play_intro() -> void:
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 	await t_hp.finished
+
+func _resolve_player() -> void:
+	if jugador and is_instance_valid(jugador):
+		return
+	jugador = get_tree().get_first_node_in_group("jugador")

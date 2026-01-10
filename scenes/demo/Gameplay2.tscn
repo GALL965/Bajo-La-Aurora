@@ -169,7 +169,7 @@ wait_time = 7.0
 
 [node name="sfx" type="Node" parent="."]
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." groups=["music"]]
 stream = ExtResource("8_sovgu")
 autoplay = true
 
@@ -183,14 +183,6 @@ offset_bottom = 20.0
 
 [node name="hud" parent="." instance=ExtResource("12_tgtu1")]
 visible = false
-anim_fast_time = 0.12
-anim_settle_time = 0.1
-overshoot = 0.04
-anim_duration = 0.25
-intro_fade_time = 0.35
-intro_blink_count = 2
-intro_fill_time = 0.45
-hide_mana = true
 
 [node name="Cutscene" type="CanvasLayer" parent="."]
 

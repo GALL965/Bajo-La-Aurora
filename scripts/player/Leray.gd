@@ -11,6 +11,8 @@ var anim_forzada: String = ""
 
 @onready var golpe_shape: CollisionShape2D = $Golpe/Golpe
 @onready var sprite: AnimatedSprite2D = $Visual/Sprite
+@export var death_restart_delay: float = 2.2
+var is_dead: bool = false
 
 
 @onready var magic: MagicCaster = $Components/MagicCaster
@@ -56,10 +58,11 @@ var _knockback_vel_x: float = 0.0
 func _enter_tree() -> void:
 	add_to_group("jugador")
 
-
 func _ready() -> void:
 	if attack:
 		attack.ataque_ejecutado.connect(_on_ataque_ejecutado)
+		
+	
 
 	add_to_group("jugador")
 
@@ -70,14 +73,17 @@ func _ready() -> void:
 	emit_signal("hp_changed", hp, hp_max)
 
 	if sprite:
-		if sprite.sprite_frames and sprite.sprite_frames.has_animation("damage"):
-			sprite.sprite_frames.set_animation_loop("damage", false)
+		if sprite.sprite_frames:
+			if sprite.sprite_frames.has_animation("damage"):
+				sprite.sprite_frames.set_animation_loop("damage", false)
+			if sprite.sprite_frames.has_animation("death"):
+				sprite.sprite_frames.set_animation_loop("death", false)
 
-		sprite.animation_finished.connect(_on_animation_finished)
+		if not sprite.animation_finished.is_connected(_on_animation_finished):
+			sprite.animation_finished.connect(_on_animation_finished)
 
 	golpe_offset_x = abs(golpe_shape.position.x)
 
-	# Timers
 	if dodge_timer:
 		dodge_timer.one_shot = true
 		if not dodge_timer.timeout.is_connected(_on_iframes_timeout):
@@ -88,7 +94,17 @@ func _ready() -> void:
 		if not knockback_timer.timeout.is_connected(_on_knockback_timeout):
 			knockback_timer.timeout.connect(_on_knockback_timeout)
 
+	if death_timer:
+		death_timer.one_shot = true
+		if not death_timer.timeout.is_connected(_on_death_timeout):
+			death_timer.timeout.connect(_on_death_timeout)
+
 func _physics_process(delta: float) -> void:
+	if is_dead:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
+
 	en_salto = vertical.is_en_el_aire()
 	en_dash = dash.esta_dasheando()
 	en_ataque = attack.is_attacking
@@ -114,17 +130,16 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
-	# Salto visual / eje Z falso
 	vertical.process_vertical(delta)
-
-	# taque (timers / combo reset)
 	attack.process_attack(delta)
 
-	# Facing / ZIndex
 	_update_facing()
 	z_index = int(global_position.y)
 
+
 func _unhandled_input(event: InputEvent) -> void:
+	if is_dead:
+		return
 	if bloqueando_input or en_cinematica:
 		return
 
@@ -135,6 +150,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("jump"):
 		vertical.start_jump()
+
 
 
 
@@ -176,22 +192,19 @@ func _set_facing(derecha: bool) -> void:
 # API para enemigos
 
 func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float = 220.0) -> void:
+	if is_dead:
+		return
 	if invulnerable:
 		return
 	if hp <= 0.0:
 		return
 
-	# 1) Baja HP
-
 	HitfxPool.play_fx(global_position + Vector2(0, -30))
 	DamagenumberPool.play_damage(cantidad, global_position + Vector2(0, -60))
 
-
 	hp = max(hp - cantidad, 0.0)
-
 	emit_signal("hp_changed", hp, hp_max)
 
-	# 2) Entra a estado DAMAGE + lock input
 	en_damage = true
 	_lock_damage = true
 	_refresh_input_lock()
@@ -202,7 +215,6 @@ func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float
 	$Audio/dano.play()
 	_play_if_not("damage")
 
-
 	invulnerable = true
 	if dodge_timer:
 		dodge_timer.start(i_frames_time)
@@ -210,10 +222,7 @@ func recibir_dano(cantidad: float, atacante: Node = null, knockback_poder: float
 	_aplicar_knockback(cantidad, atacante, knockback_poder)
 
 	if hp <= 0.0:
-		emit_signal("died")
-
-#funcion para mostrar salud cuando se implemente
-#DamageNumberPool.play_heal(cantidad, global_position + Vector2(0, -60))
+		_die()
 
 
 
@@ -254,7 +263,8 @@ func _on_knockback_timeout() -> void:
 	_refresh_input_lock()
 
 func _refresh_input_lock() -> void:
-	bloqueando_input = _lock_damage or _lock_knockback
+	bloqueando_input = is_dead or _lock_damage or _lock_knockback
+
 
 func esta_en_el_aire() -> bool:
 	return vertical.is_en_el_aire()
@@ -263,11 +273,14 @@ func get_altura_actual() -> float:
 	return vertical.get_altura()
 
 func _actualizar_animacion() -> void:
+	if is_dead:
+		_play_if_not("death")
+		return
+
 	if anim_forzada != "":
 		_play_if_not(anim_forzada)
 		return
 
-	# PRIORIDAD: daño primero (si no, se pisa y nunca termina)
 	if en_damage:
 		_play_if_not("damage")
 		return
@@ -286,6 +299,7 @@ func _actualizar_animacion() -> void:
 	_play_if_not("idle")
 
 
+
 func _play_if_not(anim: String) -> void:
 	if sprite.animation != anim:
 		if sprite.sprite_frames and sprite.sprite_frames.has_animation(anim):
@@ -293,10 +307,16 @@ func _play_if_not(anim: String) -> void:
 
 func _on_animation_finished() -> void:
 	var anim := sprite.animation
+
 	if anim == "damage":
 		en_damage = false
 		_lock_damage = false
 		_refresh_input_lock()
+		return
+
+	if anim == "death":
+		return
+
 
 func get_altura() -> float:
 	return $Components/Vertical.get_altura()
@@ -368,3 +388,52 @@ func mostrar_hit_fx() -> void:
 	get_parent().add_child(fx)
 	fx.global_position = global_position + Vector2(0, -30)
 	fx.rotation = randf_range(-0.2, 0.2)
+
+func _die() -> void:
+	if is_dead:
+		return
+
+	is_dead = true
+	invulnerable = true
+	en_cinematica = true
+
+	anim_forzada = ""
+	en_damage = false
+	en_ataque = false
+
+	_lock_damage = false
+	_lock_knockback = false
+	_en_knockback = false
+	_knockback_vel_x = 0.0
+	_refresh_input_lock()
+
+	if attack:
+		attack.cancel_attack()
+		attack.set_process(false)
+		attack.set_physics_process(false)
+
+	if dash:
+		dash.set_process(false)
+		dash.set_physics_process(false)
+
+	if movement:
+		movement.set_process(false)
+		movement.set_physics_process(false)
+
+	if vertical:
+		vertical.set_process(false)
+		vertical.set_physics_process(false)
+
+	if magic:
+		magic.set_process(false)
+		magic.set_physics_process(false)
+
+	velocity = Vector2.ZERO
+	_play_if_not("death")
+
+	emit_signal("died")
+
+
+
+func _on_death_timeout() -> void:
+	SceneLoader.goto_scene("res://scenes/demo/Gameplay2.tscn")

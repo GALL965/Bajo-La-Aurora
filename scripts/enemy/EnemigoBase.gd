@@ -9,6 +9,7 @@ enum VerticalMode { SUELO, VOLANDO }
 @export var salto_cooldown: float = 1.2
 var _base_visual_pos: Vector2
 var _visual_base_scale: Vector2
+var _player_dead: bool = false
 
 var _salto_cd_left: float = 0.0
 var t_espera: float = 0.0
@@ -72,9 +73,7 @@ var kb_time_left: float = 0.0
 @onready var t_muerte: Timer = $Timers/MuerteTimer
 @onready var audio_dano: AudioStreamPlayer2D = get_node_or_null("dano")
 
-
 func _ready() -> void:
-
 	_mask_base = int(collision_mask)
 
 	add_to_group("enemigos")
@@ -84,17 +83,17 @@ func _ready() -> void:
 	_visual_base_scale = visual.scale
 	_visual_base_scale.x = abs(_visual_base_scale.x)
 
-
 	var cand = get_tree().get_nodes_in_group("jugador")
 	if cand.size() > 0:
 		jugador = cand[0]
-		
-	
+
 	if jugador:
+		if jugador.has_signal("died") and not jugador.died.is_connected(_on_player_died):
+			jugador.died.connect(_on_player_died)
+
 		var v = jugador.get_node_or_null("Components/Vertical")
 		if v and v.has_signal("jumped"):
 			v.jumped.connect(_on_player_jumped)
-
 
 	senses.setup(self, jugador)
 	move.setup(self, jugador)
@@ -107,22 +106,14 @@ func _ready() -> void:
 	health.tomar_dano.connect(_on_tomar_dano)
 	health.murio.connect(_on_murio)
 
-	if sprite:
+	if sprite and not sprite.animation_finished.is_connected(_on_sprite_anim_finished):
 		sprite.animation_finished.connect(_on_sprite_anim_finished)
 
-
-	# IMPORTANTE:
-	# NO reescalar Facing aquí. Si lo escalaste en editor, queremos respetarlo.
-	# Quita completamente:
-	# facing.scale = Vector2(1, 1)
-	
 	if hit_shape:
 		_hit_base_x = abs(hit_shape.position.x)
 
 	if det_shape:
 		_det_base_x = abs(det_shape.position.x)
-
-
 
 func _physics_process(delta: float) -> void:
 	if estado == "esperando":
@@ -130,13 +121,18 @@ func _physics_process(delta: float) -> void:
 		if t_espera <= 0.0:
 			estado = "orbitando"
 
-
 	if health and not health.esta_vivo():
 		return
-		
+
+	if _player_dead:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation("idle"):
+			sprite.play("idle")
+		return
+
 	if _salto_cd_left > 0.0:
 		_salto_cd_left -= delta
-
 
 	_process_vertical(delta)
 
@@ -148,7 +144,6 @@ func _physics_process(delta: float) -> void:
 	if move:
 		v = move.get_velocidad_actual()
 
-	# Knockback manda en X
 	if kb_time_left > 0.0:
 		v.x = kb_vel_x
 		kb_time_left -= delta
@@ -166,13 +161,12 @@ func _physics_process(delta: float) -> void:
 				kb_vel_x = 0.0
 
 	velocity = v
-	
+
 	if velocity.length() < 8.0:
 		velocity = Vector2.ZERO
 
-	
 	if jugador and jugador.has_method("esta_en_el_aire") and bool(jugador.call("esta_en_el_aire")):
-		const LAYER_PLAYER := 1 << 1  
+		const LAYER_PLAYER := 1 << 1
 		collision_mask = _mask_base & ~LAYER_PLAYER
 	else:
 		collision_mask = _mask_base
@@ -185,6 +179,7 @@ func _physics_process(delta: float) -> void:
 	_update_facing()
 
 	z_index = int(global_position.y)
+
 
 func _process_vertical(delta: float) -> void:
 	if vertical_mode == VerticalMode.VOLANDO:
@@ -502,3 +497,24 @@ func mostrar_hit_fx() -> void:
 	get_parent().add_child(fx)
 	fx.global_position = global_position + Vector2(0, -30)
 	fx.rotation = randf_range(-0.2, 0.2)
+
+
+func _on_player_died() -> void:
+	_player_dead = true
+
+	if combat and combat.has_method("cancel_attack"):
+		combat.call("cancel_attack")
+
+	jugador = null
+
+	if move:
+		move.jugador = null
+	if combat:
+		combat.jugador = null
+	if senses:
+		senses.jugador = null
+
+	var det_area := det_node as Area2D
+	if det_area:
+		det_area.set_deferred("monitoring", false)
+		det_area.set_deferred("monitorable", false)

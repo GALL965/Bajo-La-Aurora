@@ -10,14 +10,6 @@
 script = ExtResource("1_fdg6f")
 hp_fill_path = NodePath("MarginContainer/VBoxContainer/HPBar/Fill")
 mp_fill_path = NodePath("MarginContainer/VBoxContainer/MPBar/Fill")
-anim_fast_time = null
-anim_settle_time = null
-overshoot = null
-anim_duration = null
-intro_fade_time = null
-intro_blink_count = null
-intro_fill_time = null
-hide_mana = null
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 offset_left = 95.0

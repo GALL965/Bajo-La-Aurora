@@ -128,25 +128,7 @@ scale = Vector2(0.8971965, 0.8971965)
 collision_layer = 8
 collision_mask = 129
 script = ExtResource("1_rdiwc")
-prob_salto_amenaza = null
-prob_salto_espejo = null
-aire_altura_min_para_reaccion = null
-aire_rango_x_para_reaccion = null
-salto_cooldown = null
-espera_post_ataque = null
-facing_deadzone_x = null
-vertical_mode = null
-altura_volando = null
-bob_amp = null
-bob_speed = null
-ignorar_colision_con_unidades_en_aire = null
-capas_unidades = null
-velocidad_max = null
 attack_damage = 15.0
-ataque_delay = null
-fuerza_salto = null
-gravedad = null
-kb_decay = null
 
 [node name="Sombra" type="Sprite2D" parent="."]
 modulate = Color(1, 1, 1, 0.39215687)

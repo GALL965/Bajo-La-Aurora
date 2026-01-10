@@ -1,0 +1,136 @@
+[gd_scene load_steps=19 format=3 uid="uid://ci2wbl2uop8aq"]
+
+[ext_resource type="Texture2D" uid="uid://3ieiqkhrnpsa" path="res://fond.png" id="1_0mbwe"]
+[ext_resource type="Script" uid="uid://d3jyufpcp8si7" path="res://scripts/level/CombatBlockZone.gd" id="1_avgnc"]
+[ext_resource type="PackedScene" uid="uid://f84k6k4veyhm" path="res://scenes/player/Leray.tscn" id="1_m1qn7"]
+[ext_resource type="Script" uid="uid://yhh8y504xg1u" path="res://scripts/level/BaseLevel.gd" id="1_pit27"]
+[ext_resource type="Script" uid="uid://xkxcnngy8a7o" path="res://scripts/Camera/BrawlerCamera.gd" id="2_6n2xs"]
+[ext_resource type="Script" uid="uid://ush61nvygonv" path="res://scripts/level/LevelConfig.gd" id="2_gb3qy"]
+[ext_resource type="PackedScene" uid="uid://d3o8r8engudqb" path="res://scenes/ui/DialogBox.tscn" id="3_l1kor"]
+[ext_resource type="PackedScene" uid="uid://iclymlq53aj2" path="res://scenes/hud/HUD.tscn" id="4_7efph"]
+[ext_resource type="Script" uid="uid://dw2cckoims1fw" path="res://scripts/level/LevelController.gd" id="5_2xh61"]
+[ext_resource type="Script" uid="uid://8qakoe7aljvf" path="res://scripts/parallax/ParallaxController.gd" id="6_pxdnj"]
+[ext_resource type="Script" uid="uid://dbgbcegppegxn" path="res://scripts/parallax/ParallaxLayer.gd" id="7_y4itr"]
+[ext_resource type="Resource" uid="uid://1rkwqo8rh1ou" path="res://scenes/LevelTemplate.tres" id="8_gwxfa"]
+[ext_resource type="Texture2D" uid="uid://eh2kh1dpktg6" path="res://assets/sprites/terrain/intro/bars.png" id="8_l0di7"]
+[ext_resource type="PackedScene" uid="uid://diduya384mpvg" path="res://scenes/ui/PauseMenu.tscn" id="9_gwxfa"]
+[ext_resource type="Script" uid="uid://b27b0cgsymlng" path="res://scripts/level/CombatZone.gd" id="10_c0jfk"]
+
+[sub_resource type="Resource" id="Resource_pit27"]
+script = ExtResource("2_gb3qy")
+metadata/_custom_type_script = "uid://ush61nvygonv"
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lwxd8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1bpyc"]
+size = Vector2(778, 600)
+
+[node name="LevelTemplate" type="Node2D"]
+script = ExtResource("1_pit27")
+config = SubResource("Resource_pit27")
+hud_path = NodePath("HUD")
+dialog_path = NodePath("UI/DialogBox")
+player_path = NodePath("Leray")
+
+[node name="LevelController" type="Node" parent="."]
+script = ExtResource("5_2xh61")
+config = ExtResource("8_gwxfa")
+player_path = NodePath("../Leray")
+hud_path = NodePath("../HUD")
+
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="TextureRect" type="TextureRect" parent="Background"]
+offset_left = -50.0
+offset_top = -41.0
+offset_right = 2308.0
+offset_bottom = 1245.0
+texture = ExtResource("1_0mbwe")
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Parallax" type="Node2D" parent="World"]
+script = ExtResource("6_pxdnj")
+player_path = NodePath("../../Leray")
+
+[node name="Layer_Far" type="Node2D" parent="World/Parallax"]
+script = ExtResource("7_y4itr")
+
+[node name="Sprite2D" type="Sprite2D" parent="World/Parallax/Layer_Far"]
+position = Vector2(24, -801)
+texture = ExtResource("8_l0di7")
+
+[node name="Layer_Mid" type="Node2D" parent="World/Parallax"]
+script = ExtResource("7_y4itr")
+speed = 0.6
+
+[node name="Sprite2D" type="Sprite2D" parent="World/Parallax/Layer_Mid"]
+position = Vector2(177.00002, 489.00006)
+rotation = -3.134725
+texture = ExtResource("8_l0di7")
+
+[node name="Layer_Close" type="Node2D" parent="World/Parallax"]
+
+[node name="Sprite2D" type="Sprite2D" parent="World/Parallax/Layer_Close"]
+
+[node name="Spawns" type="Node2D" parent="World"]
+
+[node name="P0" type="Marker2D" parent="World/Spawns"]
+
+[node name="P1" type="Marker2D" parent="World/Spawns"]
+
+[node name="P2" type="Marker2D" parent="World/Spawns"]
+position = Vector2(399, 92)
+
+[node name="Enemies" type="Node2D" parent="World"]
+
+[node name="Triggers" type="Node2D" parent="World"]
+
+[node name="LobbyZone" type="Area2D" parent="World/Triggers"]
+script = ExtResource("1_avgnc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Triggers/LobbyZone"]
+shape = SubResource("CapsuleShape2D_lwxd8")
+
+[node name="CombatZone" type="Area2D" parent="World/Triggers"]
+script = ExtResource("10_c0jfk")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="World/Triggers/CombatZone"]
+light_mask = 139
+visibility_layer = 385
+position = Vector2(14, -8)
+shape = SubResource("RectangleShape2D_1bpyc")
+
+[node name="Leray" parent="." instance=ExtResource("1_m1qn7")]
+
+[node name="BrawlerCamera" type="Node2D" parent="."]
+script = ExtResource("2_6n2xs")
+target_path = NodePath("../Leray")
+metadata/_custom_type_script = "uid://xkxcnngy8a7o"
+
+[node name="Camera2D" type="Camera2D" parent="BrawlerCamera"]
+
+[node name="Timers" type="Node" parent="."]
+
+[node name="WaveTimer" type="Timer" parent="Timers"]
+one_shot = true
+
+[node name="SpawnTimer" type="Timer" parent="Timers"]
+one_shot = true
+
+[node name="UI" type="CanvasLayer" parent="."]
+visible = false
+
+[node name="DialogBox" parent="UI" instance=ExtResource("3_l1kor")]
+offset_left = -95.0
+offset_top = 20.0
+offset_right = -95.0
+offset_bottom = 20.0
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="HUD" parent="." instance=ExtResource("4_7efph")]
+hide_mana = false
+
+[node name="PauseMenu" parent="." instance=ExtResource("9_gwxfa")]

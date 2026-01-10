@@ -45,6 +45,7 @@ folder_colors={
 enemigos=""
 enemigos_androides=""
 jugador=""
+music=""
 
 [gui]
 

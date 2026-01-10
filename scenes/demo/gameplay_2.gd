@@ -6,6 +6,7 @@ var _final_started := false
 var _extraction_started := false
 var _titles_started := false
 @onready var fx_layer: Node2D = $World/FXLayer
+var _restarting := false
 
 var _timeline_running := false
 
@@ -75,12 +76,23 @@ var _spawn_points: Array[Marker2D] = []
 # CICLO PRINCIPAL
 # =========================
 func _ready() -> void:
-	#damage_numbers.set_fx_parent($FX)
+	# Asegurar grupo y referencia de HUD (clave para reinicios)
+	if player and not player.is_in_group("jugador"):
+		player.add_to_group("jugador")
 
+	if hud and hud.has_method("set_player"):
+		hud.call("set_player", player)
+
+	# Seguridad: el spawner NO debe correr hasta _enable_gameplay
+	_stop_enemy_spawner()
+
+	
 	_rng.randomize()
 	_setup_enemy_spawner()
-
 	_setup_scene()
+
+	if player and player.has_signal("died"):
+		player.died.connect(_on_player_died)
 
 	await _fall_sequence()
 	await _post_fall_sequence()
@@ -88,8 +100,10 @@ func _ready() -> void:
 	if hud and hud.has_method("play_intro"):
 		await hud.play_intro()
 
-	_enable_gameplay()
+	if player and player.has_signal("hp_changed"):
+		player.emit_signal("hp_changed", player.hp, player.hp_max)
 
+	_enable_gameplay()
 
 # =========================
 # FASE 0 – PREPARACIÓN
@@ -269,6 +283,15 @@ func _play_anim_if_exists(anim_name: String) -> void:
 # SPAWNER: SETUP
 # =========================
 func _setup_enemy_spawner() -> void:
+	if wave_timer:
+		wave_timer.autostart = false
+		wave_timer.stop()
+
+	if spawn_timer:
+		spawn_timer.autostart = false
+		spawn_timer.stop()
+
+	
 	# fallback si no asignas nada en el inspector
 	if enemy_scenes.is_empty():
 		enemy_scenes = [DEFAULT_ENEMY]
@@ -604,3 +627,20 @@ func _freeze_enemies(freeze: bool) -> void:
 		# Fallback: si algún enemigo no usa módulos, congela el root
 		e.set_process(not freeze)
 		e.set_physics_process(not freeze)
+		
+		
+func _on_player_died() -> void:
+	if _restarting:
+		return
+	_restarting = true
+
+	_timeline_running = false
+	_stop_enemy_spawner()
+	_freeze_enemies(true)
+
+	_player_lock(true)
+	_set_player_components_enabled(false)
+
+	await get_tree().create_timer(2.2).timeout
+	await get_tree().process_frame
+	SceneLoader.goto_scene("res://scenes/demo/Gameplay2.tscn", 1.2)
